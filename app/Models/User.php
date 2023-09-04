@@ -74,6 +74,5 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
         $this->generateToken();
         return $this->fresh();
-
     }
 }

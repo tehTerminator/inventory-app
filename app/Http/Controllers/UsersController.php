@@ -75,7 +75,4 @@ class UsersController extends Controller
         return response()->json($user->login($request->password));
 
     }
-
-
-
 }
