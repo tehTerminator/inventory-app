@@ -30,14 +30,14 @@ return new class extends Migration
             $table->softDeletes();
             $table->timestamps();
 
-            $table->foreign('roles')->references('id')->on('roles');
+            $table->foreign('role_id')->references('id')->on('roles');
         });
 
         // Create a Admin Role
         DB::table('roles')->insert(['name' => 'admin', 'description' => 'A SuperUser']);
 
         // Assign the admin role to the first user
-        DB::table('users')->where('id', 1)->update(['role' => '1']);
+        DB::table('users')->where('id', 1)->update(['role_id' => '1']);
     }
 
     /**
