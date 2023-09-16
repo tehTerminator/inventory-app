@@ -59,20 +59,26 @@ class UsersController extends Controller
         return response()->json($user);
     }
 
-    public function login(Request $request)
+    public function authenticate(Request $request)
     {
         $this->validate($request, [
             'username' => 'required|string',
             'password' => 'required'
         ]);
 
-        $user = User::first('username', $request->username);
+
+        $user = User::where('username', $request->username)->first();
+
 
         if (empty($user)) {
-            return response()->json(['message' => 'No Such User'], 401);
+            return response('No Such User', 401);
         }
 
-        return response()->json($user->login($request->password));
+        if( $user->login($request->password) )
+        {
+            return response()->json($user->fresh());
+        }
 
+        return response()->json(['message' => 'Invalid Password'], 401);
     }
 }

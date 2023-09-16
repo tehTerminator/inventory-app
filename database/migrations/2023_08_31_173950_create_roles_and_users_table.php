@@ -23,9 +23,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('username')->unique();
-            $table->string('mobile');
+            $table->string('mobile')->nullable()->default(NULL);
             $table->string('password');
-            $table->string('auth_token');
+            $table->string('auth_token')->nullable()->default(NULL);
             $table->unsignedBigInteger('role_id');
             $table->softDeletes();
             $table->timestamps();

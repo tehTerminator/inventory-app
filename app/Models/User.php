@@ -68,11 +68,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     public function login(string $password) {
 
-        if (!Hash::check($password, $this->password)) {
-            return response()->json(['message' => 'Invalid Password'], 401);
+        if (Hash::check($password, $this->password)) {
+            $this->generateToken();
+            return true;
         }
 
-        $this->generateToken();
-        return $this->fresh();
+        return false;
     }
 }
