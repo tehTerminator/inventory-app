@@ -19,3 +19,17 @@ $router->get('/', function () use ($router) {
 
 
 $router->get('/user/auth', ['uses' => 'UsersController@authenticate']);
+
+$router->group(['prefix'=>'get', 'middleware' => 'auth'], function() use ($router) {
+    $router->get('locations/', ['uses' => 'LocationController@index']);
+    $router->get('location/{$id:[0-9]+}', ['uses' => 'LocationController@find']);
+    $router->get('locations/{$name:[A-Za-z]+}', ['uses' => 'LocationController@findByName']);
+});
+
+$router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
+    $router->put('location', ['uses' => 'LocationController@store']);
+});
+
+$router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
+    $router->put('location/{$id:[0-9]+}', ['uses' => 'LocationController@destroy']);
+})
