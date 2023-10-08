@@ -32,4 +32,4 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
     $router->put('location/{$id:[0-9]+}', ['uses' => 'LocationController@destroy']);
-})
+});
