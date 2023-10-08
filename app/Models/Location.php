@@ -16,4 +16,14 @@ class Location extends Model
     {
         return ucfirst($this->attributes['name']);
     }
+
+    public function products()
+    {
+        return $this->hasManyThrough(
+            Product::class,
+            StockLocationInfo::class,
+            'location_id',
+            'product_id'
+        );
+    }
 }
