@@ -12,6 +12,7 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'rate',
+        'quantity'
     ];
 
     public function product()
