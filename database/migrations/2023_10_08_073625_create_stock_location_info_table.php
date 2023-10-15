@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('stock_location_info', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id');
-            $table->foreign('product_id')->references('id')->on('products');
             $table->unsignedBigInteger('location_id');
-            $table->foreign('location_id')->references('id')->on('location');
             $table->integer('quantity');
             $table->timestamps();
+            
+            $table->foreign('product_id')->references('id')->on('products');
+            $table->foreign('location_id')->references('id')->on('locations');
         });
     }
 

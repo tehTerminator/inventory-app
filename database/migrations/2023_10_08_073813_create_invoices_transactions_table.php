@@ -18,7 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->double('quantity');
             $table->double('rate');
-            $table->double('discount')->default(0);
+            $table->double('gst')->default(0);
+            $table->double('amount')->default(0);
             $table->timestamps();
             
             $table->foreign('invoice_id')->references('id')->on('invoices');
