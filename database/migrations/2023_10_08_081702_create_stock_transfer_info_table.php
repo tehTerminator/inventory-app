@@ -14,8 +14,11 @@ return new class extends Migration
         Schema::create('stock_transfer_info', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id');
-            $table->unsignedBigInteger('from_location_id');
-            $table->unsignedBigInteger('to_location_id');
+            $table->unsignedBigInteger('from_location_id')->nullable()->default(NULL);
+            $table->unsignedBigInteger('to_location_id')->nullable()->default(NULL);
+            $table->string('narration');
+            $table->integer('balance_quantity');
+            $table->integer('quantity');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
 
