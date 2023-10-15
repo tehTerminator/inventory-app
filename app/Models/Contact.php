@@ -16,6 +16,10 @@ class Contact extends Model
         'kind',
     ];
 
+    protected $hidden = [
+        'kind', 'created_at', 'updated_at'
+    ];
+
     public function invoices()
     {
         return $this->hasMany(Invoice::class);
@@ -25,4 +29,13 @@ class Contact extends Model
     {
         return $this->hasMany(InvoicePaymentInfo::class);
     }
+
+    public function scopeCustomer($query) {
+        return $query->where('kind', 'CUSTOMER');
+    }
+
+    public function scopeSupplier($query) {
+        return $query->where('kind', 'SUPPLIER');
+    }
+
 }
