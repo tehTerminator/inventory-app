@@ -15,7 +15,10 @@ class StockTransferInfo extends Model
         'product_id',
         'from_location_id',
         'to_location_id',
+        'narration',
         'user_id',
+        'quantity',
+        'balance_quantity'
     ];
 
     public function product()

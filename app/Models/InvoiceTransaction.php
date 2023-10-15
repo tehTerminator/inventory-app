@@ -17,7 +17,7 @@ class InvoiceTransaction extends Model
         'user_id',
         'quantity',
         'rate',
-        'discount',
+        'gst',
     ];
 
     public function invoice()
