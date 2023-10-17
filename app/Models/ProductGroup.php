@@ -13,6 +13,11 @@ class ProductGroup extends Model
         'title',
     ];
 
+    protected $hidden = [
+        'create_at',
+        'updated_at'
+    ];
+
     public function products()
     {
         return $this->hasMany(Product::class, 'group_id', 'id');

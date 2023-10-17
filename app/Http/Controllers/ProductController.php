@@ -13,19 +13,39 @@ class ProductController extends Controller
     public function createGroup(Request $request)
     {
         $this->validate($request, [
-            'title' => 'required|exists:App/Models/ProductGroup,title',
+            'title' => 'required|unique:product_groups,title',
         ]);
         $group = ProductGroup::create($request->only('title'));
+        return response()->json($group);
+    }
+
+    public function indexGroups() {
+        return response()->json(ProductGroup::all());
+    }
+
+    public function getGroupById($id) {
+        $group = ProductGroup::findOrFail($id);
+        return response()->json($group);
+    }
+
+    public function updateGroup(Request $request) {
+        $this->validate($request, [
+            'id' => 'required|exists:product_groups,id',
+            'title' => 'required|unique:product_groups,title'
+        ]);
+        $group = ProductGroup::findOrFail($request->id);
+        $group->title = $request->title;
+        $group->save();
         return response()->json($group);
     }
 
     public function createProduct(Request $request)
     {
         $this->validate($request, [
-            'title' => 'required|unique:App/Models/Product,title',
-            'group_id' => 'required|exists:App/Models/ProductGroup,id',
-            'quantity' => 'integer',
-            'location_id' => 'integer,exists:App/Models/Location,id'
+            'title' => 'required|unique:products,title',
+            'group_id' => 'required|numeric|exists:product_groups,id',
+            'quantity' => 'numeric',
+            'location_id' => 'numeric'
         ]);
 
         ProductService::createProduct(
@@ -36,7 +56,7 @@ class ProductController extends Controller
         );
     }
 
-    public function index(Request $request)
+    public function indexProducts(Request $request)
     {
         $pageLength = $request->input('pageLength', 10);
         $currentPage = $request->input('currentPage', 1);
@@ -45,7 +65,8 @@ class ProductController extends Controller
         return Product::skip($skip)->take($pageLength)->get();
     }
 
-    public function getProducts(Request $request)
+
+    public function getProductsByTitle(Request $request)
     {
         $this->validate($request, [
             'location_id' => 'required|exists:App/Models/Location,id',
@@ -57,5 +78,10 @@ class ProductController extends Controller
 
         $products = ProductService::getProductFromLocation($locationId, $title);
         return response()->json($products);
+    }
+
+    public function getProductById($id) {
+        $product = Product::findOrFail($id);
+        return response()->json($product);
     }
 }

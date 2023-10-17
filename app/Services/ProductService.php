@@ -32,6 +32,8 @@ class ProductService
             'quantity' => $quantity,
             'balance_quantity' => $quantity
         ]);
+
+        return $product;
     }
 
     public static function addProduct($product_id, $location_id, $quantity)

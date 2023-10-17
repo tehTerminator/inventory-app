@@ -9,12 +9,12 @@ class Location extends Model
     protected $table = 'locations';
 
     protected $fillable = [
-        'name',
+        'title',
     ];
 
     public function getNameAttribute()
     {
-        return ucfirst($this->attributes['name']);
+        return ucfirst($this->attributes['title']);
     }
 
     public function products()

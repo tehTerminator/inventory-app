@@ -16,7 +16,7 @@ class LocationController extends Controller
     {
         $locations = Location::all();
 
-        return response()->json($locations, 200);
+        return response()->json($locations);
     }
 
     /**
@@ -31,8 +31,8 @@ class LocationController extends Controller
         return response()->json($location);
     }
 
-    public function findByName(string $name) {
-        $locations = Location::where('name', 'LIKE', $name)->get();
+    public function findBytitle(string $title) {
+        $locations = Location::where('title', 'LIKE', $title)->get();
         return response()->json($locations);
     }
 
@@ -45,11 +45,11 @@ class LocationController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'name' => 'required|unique:locations'
+            'title' => 'required|unique:locations'
         ]);
 
         $location = new Location();
-        $location->name = $request->input('name');
+        $location->title = $request->input('title');
         $location->save();
 
         return response()->json($location, 201);
@@ -62,10 +62,12 @@ class LocationController extends Controller
      * @param  \App\Models\Location  $location
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id, $name)
+    public function update(Request $request)
     {
+        $id = $request->input('id');
+        $title = $request->input('title');
         $location = Location::findOrFail($id);
-        $location->name = $name;
+        $location->title = $title;
         $location->save();
 
         return response()->json($location, 200);
