@@ -11,22 +11,20 @@ use Illuminate\Support\Facades\DB;
 class LedgerService
 {
 
-    public function __construct(){}
-
     protected static $validationRules = [
         'id' => ['integer', 'exists:App\Models\Ledger,id'],
         'title' => ['required', 'string'],
-        'group_id' => ['required', 'exists:App\Models\Group,id']
+        'kind' => ['required', 'in:BANK,WALLETS,DEPOSITS,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME'],
     ];
 
     public static function createLedger(
         string $title,
-        $group_id,
+        string $kind,
         $can_receive_payment = false
     ) {
         $ledger = Ledger::create([
             'title' => $title,
-            'group_id' => $group_id,
+            'kind' => $kind,
             'can_receive_payment' => $can_receive_payment
         ]);
         return $ledger;
@@ -126,5 +124,5 @@ class LedgerService
         return $debitAmount;
     }
 
-
+    public function __construct(){}
 }
