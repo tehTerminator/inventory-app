@@ -47,6 +47,10 @@ class VoucherService
         }
         $user_id = Auth::user()->id;
 
+        if (!key_exists('immutable', $data)) {
+            $data['immutable'] = false;
+        }
+
         $voucher = Voucher::create([
             'cr' => $data['cr'],
             'dr' => $data['dr'],
@@ -72,7 +76,7 @@ class VoucherService
                 Carbon::parse($voucher->created_at)
             );
 
-        if ($dateDiff >= 0) {
+        if ($dateDiff > 0) {
             return response('Cant Edit Older Vouchers', 403);
         }
 
@@ -83,7 +87,7 @@ class VoucherService
             $voucher->dr = $voucher_data['dr'];
             $voucher->amount = $voucher_data['amount'];
             $voucher->narration = $voucher_data['narration'];
-            $voucher->save()->refresh();
+            $voucher->save();
             
             DB::commit();
 
@@ -96,7 +100,7 @@ class VoucherService
 
     }
 
-    public static function delete(int $id) {
+    public function delete(int $id) {
         Voucher::findOrFail($id)->softDeletes();
         return response('Deleted Successfully', 204);
     }
