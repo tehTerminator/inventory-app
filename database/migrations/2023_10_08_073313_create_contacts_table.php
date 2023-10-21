@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('mobile');
             $table->enum('kind', ['CUSTOMER', 'SUPPLIER']);
             $table->timestamps();
+
+            $table->unsignedBigInteger('ledger_id')->nullable();
+            $table->foreign('ledger_id')->references('id')->on('ledgers');
         });
     }
 
