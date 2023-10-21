@@ -10,12 +10,6 @@ use Carbon\Carbon;
 
 class LedgerController extends Controller
 {
-    private $ledgerService;
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         //
@@ -25,16 +19,8 @@ class LedgerController extends Controller
         return response()->json(Ledger::all());
     }
 
-    public function getLedgerByGroup($group_id) {
-        return response()->json(Ledger::where('group_id', $group_id)->get());
-    }
-
-    public function getLedgerByName($ledgerName) {
-        return response()->json(Ledger::where('title', 'LIKE', $ledgerName)->get());
-    }
-
     public function create(Request $request) {
-        $this->validate($request, LedgerService::getValidationRules(true, false));
+        $this->validate($request, LedgerService::getValidationRules(true));
         
         return response()->json(
             LedgerService::createLedger(
@@ -53,7 +39,7 @@ class LedgerController extends Controller
             LedgerService::updateLedger(
                 $request->id,
                 $request->title,
-                $request->input('groupId'),
+                $request->input('kind'),
                 $request->input('canReceivePayment')
             )
         );
