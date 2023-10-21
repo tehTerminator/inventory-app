@@ -23,11 +23,19 @@ class Voucher extends Model {
         'immutable',
     ];
 
+    protected $hidden = [
+        'immutable'
+    ];
+
     public function creditor() {
         return $this->belongsTo(Ledger::class, 'id', 'cr');
     }
 
     public function debtor() {
         return $this->belongsTo(Ledger::class, 'id', 'dr');
+    }
+
+    public function user() {
+        return $this->belongsTo(User::class);
     }
 }
