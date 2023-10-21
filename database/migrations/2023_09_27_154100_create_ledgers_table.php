@@ -14,8 +14,17 @@ return new class extends Migration
         Schema::create('ledgers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->unsignedBigInteger('group_id');
-            $table->foreign('group_id')->references('id')->on('groups');
+            $table->enum('kind', [
+                'CAPITAL',
+                'BANK',
+                'WALLET',
+                'DEPOSIT',
+                'CASH',
+                'PAYABLE',
+                'RECEIVABLE',
+                'EXPENSE',
+                'INCOME'
+            ]);
             $table->boolean('can_receive_payment')->default(false);
             $table->timestamps();
         });
