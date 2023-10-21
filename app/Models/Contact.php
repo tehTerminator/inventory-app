@@ -14,11 +14,16 @@ class Contact extends Model
         'address',
         'mobile',
         'kind',
+        'ledger_id'
     ];
 
     protected $hidden = [
         'kind', 'created_at', 'updated_at'
     ];
+
+    public function ledger() {
+        return $this->hasOne(Ledger::class);
+    }
 
     public function invoices()
     {
@@ -37,5 +42,4 @@ class Contact extends Model
     public function scopeSupplier($query) {
         return $query->where('kind', 'SUPPLIER');
     }
-
 }
