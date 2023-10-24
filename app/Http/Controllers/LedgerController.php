@@ -19,7 +19,7 @@ class LedgerController extends Controller
         return response()->json(Ledger::all());
     }
 
-    public function create(Request $request) {
+    public function store(Request $request) {
         $this->validate($request, LedgerService::getValidationRules(true));
         
         return response()->json(
