@@ -5,35 +5,51 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\StockLocationInfo;
 use App\Models\StockTransferInfo;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
     public static function createProduct(string $title, $group_id, $location_id = 0, $quantity = 0)
     {
-        $product = Product::create([
-            'title' => $title,
-            'group_id' => $group_id
-        ]);
+        DB::beginTransaction();
 
-        if ($location_id == 0) {
+        try{
+            $product = Product::create([
+                'title' => $title,
+                'group_id' => $group_id
+            ]);
+    
+            if ($location_id == 0) {
+                return $product;
+            }
+    
+            $user_id = Auth::user()->id;
+    
+            StockLocationInfo::create([
+                'product_id' => $product->id,
+                'location_id' => $location_id,
+                'quantity' => $quantity
+            ]);
+    
+            StockTransferInfo::create([
+                'product_id' => $product->id,
+                'to_location_id' => $location_id,
+                'narration' => 'New Product',
+                'quantity' => $quantity,
+                'balance_quantity' => $quantity,
+                'user_id' => $user_id
+            ]);
+
+            DB::commit();
+    
             return $product;
+        } catch(\Exception $e) {
+            DB::rollBack();
+            return response($e, 500);
         }
 
-        StockLocationInfo::create([
-            'product_id' => $product->id,
-            'location_id' => $location_id,
-            'quantity' => $quantity
-        ]);
-
-        StockTransferInfo::create([
-            'product_id' => $product->id,
-            'to_location_id' => $location_id,
-            'narration' => 'New Product',
-            'quantity' => $quantity,
-            'balance_quantity' => $quantity
-        ]);
-
-        return $product;
     }
 
     public static function addProduct($product_id, $location_id, $quantity)
@@ -60,7 +76,11 @@ class ProductService
         $location_info->save();
     }
 
-    public static function getProductFromLocation($location_id, $title)
+    public static function getProductFromLocation(int $location_id) {
+        
+    }
+
+    public static function searchProductFromLocation($location_id, $title)
     {
 
         $product = Product::where('title', $title)
@@ -72,5 +92,13 @@ class ProductService
             ->get();
 
         return $product;
+    }
+
+    public static function getProducts(Request $request) {
+        $pageLength = $request->input('pageLength', 10);
+        $currentPage = $request->input('currentPage', 1);
+        $skip = ($currentPage - 1) * $pageLength;
+
+        return Product::skip($skip)->take($pageLength)->get();
     }
 }

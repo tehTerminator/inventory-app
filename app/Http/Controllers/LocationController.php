@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use App\Models\StockLocationInfo;
 use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class LocationController extends Controller
 {
@@ -17,6 +20,38 @@ class LocationController extends Controller
         $locations = Location::all();
 
         return response()->json($locations);
+    }
+
+    public function indexLocationProducts(Request $request) {
+
+    }
+
+    public function indexUsers(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'required|exists:locations,id'
+        ]);
+
+        $id = $request->input('id');
+
+        $users = User::whereIn('id', function($query) use ($id) {
+            $query->select('user_id')
+            ->from('location_users')
+            ->where('location_id', $id);
+        })->get();
+
+        return response()->json($users);
+        // return response($request->id);
+    }
+
+    public function indexInventory(Request $request) {
+        $this->validate($request, [
+            'id' => 'required|exists:locations,id'
+        ]);
+        $id = $request->id;
+
+        $data = StockLocationInfo::where('location_id', $id)->with('product')->get();
+        return response()->json($data);
     }
 
     /**

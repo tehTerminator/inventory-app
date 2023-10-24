@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductGroup;
+use App\Models\StockLocationInfo;
 use Illuminate\Http\Request;
 use App\Services\ProductService;
 
@@ -56,13 +57,23 @@ class ProductController extends Controller
         );
     }
 
-    public function indexProducts(Request $request)
+    public function indexAllProducts(Request $request)
     {
         $pageLength = $request->input('pageLength', 10);
         $currentPage = $request->input('currentPage', 1);
         $skip = ($currentPage - 1) * $pageLength;
 
-        return Product::skip($skip)->take($pageLength)->get();
+        return Product::skip($skip)->take($pageLength)->get();   
+    }
+
+    public function indexProductByLocation(Request $request) {
+        $this->validate($request, [
+            'location' => 'numeric'
+        ]);
+
+        $location = $request->input('locaiton');
+        $product = StockLocationInfo::where('location_id', $location)->with('products');
+        return response()->json($product);
     }
 
 
@@ -76,7 +87,7 @@ class ProductController extends Controller
         $title = $request->input('title') . '%';
         $locationId = $request->input('locationId');
 
-        $products = ProductService::getProductFromLocation($locationId, $title);
+        $products = ProductService::searchProductFromLocation($locationId, $title);
         return response()->json($products);
     }
 

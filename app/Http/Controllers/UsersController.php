@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Location;
 
 class UsersController extends Controller
 {
@@ -30,7 +32,7 @@ class UsersController extends Controller
         $user->username = $request->input('username');
         $user->password = Hash::make($request->input('password'));
         $user->mobile = $request->input('mobile');
-        $user->role = $request->input('role', 2);
+        $user->role_id = $request->input('role', 2);
         $user->save();
 
         return response()->json($user);
@@ -40,7 +42,6 @@ class UsersController extends Controller
     {
         return response()->json($user);
     }
-
 
     public function update(Request $request, User $user)
     {
@@ -80,5 +81,15 @@ class UsersController extends Controller
         }
 
         return response()->json(['message' => 'Invalid Password'], 401);
+    }
+
+    public function indexLocations(){
+        $user_id = Auth::user()->id;
+
+        $location = Location::whereIn('id', function($query) use ($user_id) {
+            $query->select('location_id')->from('location_users')->where('user_id', $user_id);
+        })->get();
+
+        return response()->json($location);
     }
 }

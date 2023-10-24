@@ -36,7 +36,7 @@ class VoucherController extends Controller
         return response()->json($voucher);
     }
 
-    public function create(Request $request) {
+    public function store(Request $request) {
         $this->validate($request, [
             'cr' => 'required|integer',
             'dr' => 'required|integer',

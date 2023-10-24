@@ -14,6 +14,10 @@ class Product extends Model
         'group_id',
     ];
 
+    protected $hidden = [
+        'created_at', 'updated_at'
+    ];
+
     public function group()
     {
         return $this->belongsTo(ProductGroup::class, 'group_id', 'id');

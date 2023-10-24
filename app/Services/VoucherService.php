@@ -14,11 +14,11 @@ class VoucherService
     public static function select(int $id, string $from, string $to) {
         $voucher = NULL;
         if($from === $to) {
-            $voucher = Voucher::whereDate('created_at', $from)->where('state', 1);
+            $voucher = Voucher::whereDate('created_at', $from);
         }
         else {
             $to = Carbon::createFromFormat('Y-m-d', $to)->addDay(1);
-            $voucher = Voucher::whereBetween('created_at', [$from, $to])->where('state', 1);
+            $voucher = Voucher::whereBetween('created_at', [$from, $to]);
         }
         $data = $voucher
         ->where(function($query) use ($id) {

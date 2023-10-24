@@ -28,11 +28,11 @@ class Voucher extends Model {
     ];
 
     public function creditor() {
-        return $this->belongsTo(Ledger::class, 'id', 'cr');
+        return $this->belongsTo(Ledger::class, 'cr', 'id');
     }
 
     public function debtor() {
-        return $this->belongsTo(Ledger::class, 'id', 'dr');
+        return $this->belongsTo(Ledger::class, 'dr', 'id');
     }
 
     public function user() {
