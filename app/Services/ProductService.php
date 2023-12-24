@@ -12,14 +12,14 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
-    public static function createProduct(string $title, $group_id, $location_id = 0, $quantity = 0)
+    public static function createProduct(string $title, $rate, $location_id = 0, $quantity = 0)
     {
         DB::beginTransaction();
 
         try{
             $product = Product::create([
                 'title' => $title,
-                'group_id' => $group_id
+                'rate' => $rate
             ]);
     
             if ($location_id == 0) {
@@ -61,7 +61,7 @@ class ProductService
                 StockLocationInfo::create([
                     'product_id' => $product_id,
                     'location_id' => $location_id,
-                    'quantity' => $quantity
+                    'quantity' => $quantity,
                 ]);
                 return;
             }

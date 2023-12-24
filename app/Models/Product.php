@@ -11,15 +11,11 @@ class Product extends Model
 
     protected $fillable = [
         'title',
-        'group_id',
+        'rate'
     ];
 
     protected $hidden = [
         'created_at', 'updated_at'
     ];
 
-    public function group()
-    {
-        return $this->belongsTo(ProductGroup::class, 'group_id', 'id');
-    }
 }

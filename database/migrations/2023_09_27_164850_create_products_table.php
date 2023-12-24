@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('title')->unique();
-            $table->unsignedBigInteger('group_id');
-            $table->foreign('group_id')->references('id')->on('product_groups');
+            $table->double('rate');
             $table->timestamps();
         });
     }
