@@ -20,6 +20,8 @@ class InvoiceTransaction extends Model
         'gst',
     ];
 
+    protected $with = ['product'];
+
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);

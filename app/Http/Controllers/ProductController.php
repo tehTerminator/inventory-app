@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\ProductGroup;
 use App\Models\StockLocationInfo;
+use App\Models\StockTransferInfo;
 use Illuminate\Http\Request;
 use App\Services\ProductService;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -94,5 +96,28 @@ class ProductController extends Controller
     public function getProductById($id) {
         $product = Product::findOrFail($id);
         return response()->json($product);
+    }
+
+    public function transfer(Request $request)
+    {
+
+        $this->validate($request, [
+            'product' => 'required|exists:products,id',
+            'myLocation' => 'required|exists:locations,id',
+            'toLocation' => 'required|exists:locations,id',
+            'narration' => 'required|string',
+            'quantity' => 'required|numeric|min:1'
+        ]);
+
+        $info = StockTransferInfo::create([
+            'product_id' => $request->input('product'),
+            'from_location_id' => $request->input('myLocation'),
+            'to_location_id' => $request->input('toLocation'),
+            'narration' => $request->input('narration'),
+            'user_id' => Auth::user()->id,
+            'quantity' => $request->input('quantity'),
+        ]);
+        
+        return response()->json($info);
     }
 }

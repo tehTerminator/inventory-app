@@ -18,7 +18,6 @@ class StockTransferInfo extends Model
         'narration',
         'user_id',
         'quantity',
-        'balance_quantity'
     ];
 
     public function product()

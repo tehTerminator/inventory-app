@@ -17,7 +17,6 @@ return new class extends Migration
             $table->unsignedBigInteger('from_location_id')->nullable()->default(NULL);
             $table->unsignedBigInteger('to_location_id')->nullable()->default(NULL);
             $table->string('narration');
-            $table->integer('balance_quantity');
             $table->integer('quantity');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();

@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Hash;
 
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
+
+    protected $table = 'users';
+    
     use Authenticatable, Authorizable, HasFactory, SoftDeletes;
 
     /**
@@ -28,6 +31,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'auth_token',
         'role_id',
     ];
+
+    protected $with = ['role'];
+
 
     /**
      * The attributes excluded from the model's JSON form.

@@ -20,6 +20,13 @@ class Invoice extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'location_id' => 'integer',
+        'contact_id' => 'integer',
+        'user_id' => 'integer',
+        'amount' => 'double',
+    ];
+
     public function contact()
     {
         return $this->belongsTo(Contact::class);

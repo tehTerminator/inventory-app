@@ -14,7 +14,7 @@ class LedgerService
     protected static $validationRules = [
         'id' => ['integer', 'exists:App\Models\Ledger,id'],
         'title' => ['required', 'string'],
-        'kind' => ['required', 'in:BANK,WALLETS,DEPOSITS,CASH,PAYABLES,RECEIVABLES,EXPENSE,INCOME'],
+        'kind' => ['required', 'in:CAPITAL,BANK,WALLET,DEPOSIT,CASH,PAYABLE,RECEIVABLE,EXPENSE,INCOME,PURCHASE AC,SALES AC,DUTIES AND TAXES'],
     ];
 
     public static function createLedger(
@@ -124,5 +124,7 @@ class LedgerService
         return $debitAmount;
     }
 
-    public function __construct(){}
+    public function __construct()
+    {
+    }
 }

@@ -26,6 +26,10 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     // $router->group(['prefix' => 'get'], function () use ($router) {
 
     $router->get('customers', ['uses' => 'ContactController@indexCustomer']);
+    $router->get('contacts', ['uses' => 'ContactController@indexContacts']);
+
+    $router->get('invoice', ['uses' => 'InvoiceController@select']);
+    $router->get('invoices', ['uses' => 'InvoiceController@select']);
 
     $router->get('ledger-statement', ['uses' => 'VoucherController@select']);
     $router->get('ledgers', ['uses' => 'LedgerController@select']);
@@ -56,14 +60,18 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
+// $router->group(['prefix' => 'create'], function () use ($router) {
     $router->post('contact', ['uses' => 'ContactController@store']);
+
+    $router->post('invoice', ['uses' => 'InvoiceController@store']);
 
     $router->post('ledger', ['uses' => 'LedgerController@store']);
     $router->post('location', ['uses' => 'LocationController@store']);
     $router->post('location/user', ['uses' => 'LocationUserController@store']);
 
-    $router->post('product-group', ['uses' => 'ProductController@createGroup']);
     $router->post('product', ['uses' => 'ProductController@createProduct']);
+    $router->post('product-group', ['uses' => 'ProductController@createGroup']);
+    $router->post('product/transfer', ['uses' => 'ProductController@transfer']);
 
     $router->post('user', ['uses' => 'UsersController@store']);
     $router->post('voucher', ['uses' => 'VoucherController@store']);

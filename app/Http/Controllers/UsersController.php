@@ -12,7 +12,7 @@ class UsersController extends Controller
 {
     public function index()
     {
-        $users = User::all();
+        $users = User::select(['id', 'name'])->get();
 
         return response()->json($users);
     }
@@ -22,7 +22,7 @@ class UsersController extends Controller
 
         $this->validate($request, [
             'name' => 'required|string',
-            'username' => 'required|unique:Users,username',
+            'username' => 'required|unique:users,username',
             'password' => 'required',
             'role_id' => 'numeric'
         ]);
@@ -77,7 +77,8 @@ class UsersController extends Controller
 
         if( $user->login($request->password) )
         {
-            return response()->json($user->fresh());
+            $user->refresh();
+            return response()->json($user);
         }
 
         return response()->json(['message' => 'Invalid Password'], 401);

@@ -7,16 +7,28 @@ use Illuminate\Http\Request;
 
 class ContactController extends Controller
 {
-    public function indexCustomer(Request $request) {
+    public function indexCustomer(Request $request)
+    {
         $contact = Contact::customer();
         $title = $request->input('title', NULL);
         return response()->json($contact->where('title', 'LIKE', "$title%")->take(5)->get());
     }
 
-    public function indexSupplier(Request $request) {
+    public function indexSupplier(Request $request)
+    {
         $contact = Contact::supplier();
         $title = $request->input('title', NULL);
         return response()->json($contact->where('title', 'LIKE', "$title%")->take(5)->get());
+    }
+
+    public function indexContacts(Request $request)
+    {
+        $title = $request->input('title', NULL);
+        $contact = Contact::where('title', 'LIKE', "$title%")
+        ->take(5)
+        ->select(['id', 'title'])
+        ->get();
+        return response()->json($contact);
     }
 
     /**

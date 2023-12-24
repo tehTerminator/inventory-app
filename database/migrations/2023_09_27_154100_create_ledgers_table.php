@@ -23,7 +23,10 @@ return new class extends Migration
                 'PAYABLE',
                 'RECEIVABLE',
                 'EXPENSE',
-                'INCOME'
+                'INCOME',
+                'PURCHASE AC',
+                'SALES AC',
+                'DUTIES AND TAXES'
             ]);
             $table->boolean('can_receive_payment')->default(false);
             $table->timestamps();

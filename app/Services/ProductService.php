@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Product;
 use App\Models\StockLocationInfo;
 use App\Models\StockTransferInfo;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -54,30 +55,39 @@ class ProductService
 
     public static function addProduct($product_id, $location_id, $quantity)
     {
-        $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id);
-
-        if (empty($location_info)) {
-            StockLocationInfo::create([
-                'product_id' => $product_id,
-                'location_id' => $location_id,
-                'quantity' => $quantity
-            ]);
-            return;
+        $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
+        try{
+            if (empty($location_info)) {
+                StockLocationInfo::create([
+                    'product_id' => $product_id,
+                    'location_id' => $location_id,
+                    'quantity' => $quantity
+                ]);
+                return;
+            }
+    
+            $location_info->quantity += $quantity;
+            $location_info->save();
+        } catch (\Exception $e) {
+            throw new Exception($e->getMessage() . '  Error Occurred in ProductService.php::addProduct');
         }
-
-        $location_info->quantity += $quantity;
-        $location_info->save();
     }
 
-    public static function consumeProduct($product_id, $location_id, $quantity)
+    public static function consumeProduct(
+        int $product_id,
+        int $location_id,
+        int $quantity
+    )
     {
-        $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id);
-        $location_info->quantity -= $quantity;
-        $location_info->save();
-    }
-
-    public static function getProductFromLocation(int $location_id) {
-        
+        $location = [];
+        try {
+            $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
+            $location_info->quantity -= $quantity;
+            $location_info->save();
+        }
+        catch (\Exception $e) {
+            throw new Exception($e->getMessage() . '  Error Occurred in ProductService.php::consumeProduct');
+        }
     }
 
     public static function searchProductFromLocation($location_id, $title)
