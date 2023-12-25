@@ -16,24 +16,24 @@ class ProductService
     {
         DB::beginTransaction();
 
-        try{
+        try {
             $product = Product::create([
                 'title' => $title,
                 'rate' => $rate
             ]);
-    
+
             if ($location_id == 0) {
                 return $product;
             }
-    
+
             $user_id = Auth::user()->id;
-    
+
             StockLocationInfo::create([
                 'product_id' => $product->id,
                 'location_id' => $location_id,
                 'quantity' => $quantity
             ]);
-    
+
             StockTransferInfo::create([
                 'product_id' => $product->id,
                 'to_location_id' => $location_id,
@@ -44,19 +44,18 @@ class ProductService
             ]);
 
             DB::commit();
-    
+
             return $product;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             return response($e, 500);
         }
-
     }
 
     public static function addProduct($product_id, $location_id, $quantity)
     {
         $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
-        try{
+        try {
             if (empty($location_info)) {
                 StockLocationInfo::create([
                     'product_id' => $product_id,
@@ -65,7 +64,7 @@ class ProductService
                 ]);
                 return;
             }
-    
+
             $location_info->quantity += $quantity;
             $location_info->save();
         } catch (\Exception $e) {
@@ -77,15 +76,14 @@ class ProductService
         int $product_id,
         int $location_id,
         int $quantity
-    )
-    {
-        $location = [];
+    ) {
         try {
-            $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
+            $location_info = StockLocationInfo::where('location_id', $location_id)
+            ->where('product_id', $product_id)
+            ->first();
             $location_info->quantity -= $quantity;
             $location_info->save();
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             throw new Exception($e->getMessage() . '  Error Occurred in ProductService.php::consumeProduct');
         }
     }
@@ -104,7 +102,8 @@ class ProductService
         return $product;
     }
 
-    public static function getProducts(Request $request) {
+    public static function getProducts(Request $request)
+    {
         $pageLength = $request->input('pageLength', 10);
         $currentPage = $request->input('currentPage', 1);
         $skip = ($currentPage - 1) * $pageLength;
