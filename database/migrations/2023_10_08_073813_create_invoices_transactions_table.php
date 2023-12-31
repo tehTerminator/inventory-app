@@ -14,12 +14,11 @@ return new class extends Migration
         Schema::create('invoices_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('invoice_id');
-            $table->unsignedBigInteger('product_id');
+            $table->string('description');
             $table->unsignedBigInteger('user_id');
             $table->double('quantity');
             $table->double('rate');
-            $table->double('gst')->default(0);
-            $table->double('amount')->default(0);
+            $table->double('discount');
             $table->timestamps();
             
             $table->foreign('invoice_id')->references('id')->on('invoices');
