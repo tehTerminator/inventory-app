@@ -21,7 +21,6 @@ return new class extends Migration
             $table->double('rate');
             $table->double('discount');
             $table->timestamps();
-            
             $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
