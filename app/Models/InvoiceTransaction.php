@@ -2,38 +2,31 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class InvoiceTransaction extends Model
 {
-    use HasFactory;
-
-    protected $table = 'invoices_transactions';
-
     protected $fillable = [
         'invoice_id',
-        'product_id',
+        'description',
         'user_id',
         'quantity',
         'rate',
-        'gst',
+        'discount',
     ];
-
-    protected $with = ['product'];
 
     public function invoice()
     {
         return $this->belongsTo(Invoice::class);
     }
 
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
-    }
-
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
     }
 }
