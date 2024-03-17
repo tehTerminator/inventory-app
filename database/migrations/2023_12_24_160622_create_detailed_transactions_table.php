@@ -15,12 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('item_id');
-            $table->enum('item_type', ['PRODUCT', 'LEDGER']);
+            $table->enum('item_type', ['PRODUCT', 'LEDGER', 'BUNDLE']);
             $table->unsignedBigInteger('user_id');
             $table->double('quantity');
             $table->double('rate');
             $table->double('discount');
-            $table->timestamps();
             $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
