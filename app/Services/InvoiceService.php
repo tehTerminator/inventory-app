@@ -58,8 +58,6 @@ class InvoiceService
 
     public static function createNewInvoice(Request $request, int $user_id)
     {
-
-
         DB::beginTransaction();
 
         try {
@@ -76,10 +74,16 @@ class InvoiceService
             ]);
 
 
-            $transactions = self::createTransactions(
+            $b_transactions = self::createTransactions(
                 $invoice->id,
                 $user_id,
-                $request->input('transactions')
+                $request->input('brief_transactions')
+            );
+
+            $d_transactions = self::createDetailedTransaction(
+                $invoice->id,
+                $user_id,
+                $request->input('detailed_transactions')
             );
 
 
@@ -99,7 +103,7 @@ class InvoiceService
                 );
             }
 
-            $inventoryT = self::createInventoryTransactions($transactions, (int)$invoice->location_id, $invoice->kind);
+            $inventoryT = self::createInventoryTransactions($d_transactions, (int)$invoice->location_id, $invoice->kind);
 
             DB::commit();
             return $invoice;
@@ -153,9 +157,32 @@ class InvoiceService
             $t = InvoiceTransaction::create([
                 'quantity' => $transactions[$i]['quantity'],
                 'rate' => $transactions[$i]['rate'],
-                'gst' => $transactions[$i]['gst'],
-                'amount' => $transactions[$i]['amount'],
-                'product_id' => $transactions[$i]['product_id'],
+                'discount' => $transactions[$i]['discount'],
+                'description' => $transactions[$i]['amount'],
+                'user_id' => $user_id,
+                'invoice_id' => $invoice_id
+            ]);
+            array_push($insertedTransactions, $t);
+        }
+
+        return $insertedTransactions;
+    }
+
+    public static function createDetailedTransaction(
+        int $invoice_id,
+        int $user_id,
+        array $transactions
+    ) {
+
+        $insertedTransactions = [];
+
+        for ($i = 0; $i < count($transactions); $i++) {
+            $t = InvoiceTransaction::create([
+                'quantity' => $transactions[$i]['quantity'],
+                'rate' => $transactions[$i]['rate'],
+                'discount' => $transactions[$i]['discount'],
+                'item_id' => $transactions[$i]['item_id'],
+                'item_type' => $transactions[$i]['item_type'],
                 'user_id' => $user_id,
                 'invoice_id' => $invoice_id
             ]);
@@ -259,9 +286,7 @@ class InvoiceService
                         $fromLocation,
                         $transactions[$i]['quantity']
                     );
-                } 
-                else 
-                {
+                } else {
                     ProductService::addProduct(
                         $info->product_id,
                         $toLocation,
@@ -270,7 +295,7 @@ class InvoiceService
                 }
                 array_push($response, $info);
             } catch (\Exception $e) {
-               return $e->getMessage(); 
+                return $e->getMessage();
             }
         }
 
