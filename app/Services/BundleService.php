@@ -23,10 +23,10 @@ class BundleService {
     // ];
 
     public static function selectBundle() {
-        $Bundles = Cache::remember('Bundles', 6000, function() {
+        $bundles = Cache::remember('Bundles', 6000, function() {
             return Bundle::with(['templates'])->get();
         });
-        return response()->json($Bundles);
+        return $bundles;
     }
 
     public static function createBundle(string $title, float $rate) {

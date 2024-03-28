@@ -18,7 +18,8 @@ class BundleController extends Controller
     }
 
     public function select() {
-        BundleService::selectBundle();
+        $bundles = BundleService::selectBundle();
+        return response()->json($bundles);
     }
 
     public function store(Request $request) {
