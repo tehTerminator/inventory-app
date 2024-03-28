@@ -26,18 +26,13 @@ return new class extends Migration
             $table->string('mobile')->nullable()->default(NULL);
             $table->string('password');
             $table->string('auth_token')->nullable()->default(NULL);
-            $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('role_id')->nullable()->default(null);
+            $table->unsignedBigInteger('default_location_id')->nullable()->default(null);
             $table->softDeletes();
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('roles');
         });
-
-        // Create a Admin Role
-        DB::table('roles')->insert(['name' => 'admin', 'description' => 'A SuperUser']);
-
-        // Assign the admin role to the first user
-        DB::table('users')->where('id', 1)->update(['role_id' => '1']);
     }
 
     /**

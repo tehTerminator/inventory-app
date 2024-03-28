@@ -97,12 +97,15 @@ class LedgerService
     public static function getValidationRules($uniqueTitle = false, $idRequired = false)
     {
         $rules = self::$validationRules;
+        
         if ($uniqueTitle) {
             array_push($rules['title'], 'unique:App\Models\Ledger');
         }
 
         if ($idRequired) {
             array_push($rules['id'], 'required');
+        } else {
+            unset($rules['id']);
         }
 
         return $rules;

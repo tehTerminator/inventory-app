@@ -29,7 +29,7 @@ return new class extends Migration
                 'DUTIES AND TAXES'
             ]);
             $table->boolean('can_receive_payment')->default(false);
-            $table->timestamps();
+$table->timestamps();
         });
     }
 

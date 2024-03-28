@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class InvoicePaymentInfo extends Model
 {
 
-    protected $table = 'invoice_payment_info';
+    protected $table = 'invoice_payment_infos';
 
     protected $fillable = [
         'invoice_id',

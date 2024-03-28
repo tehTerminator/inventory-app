@@ -9,7 +9,7 @@ class StockTransferInfo extends Model
 {
     use HasFactory;
 
-    protected $table = 'stock_transfer_info';
+    protected $table = 'stock_transfer_infos';
 
     protected $fillable = [
         'product_id',

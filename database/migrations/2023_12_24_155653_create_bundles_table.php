@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->unique();
             $table->double('rate');
-            $table->timestamps();
+$table->timestamps();
         });
     }
 

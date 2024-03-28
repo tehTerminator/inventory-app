@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StockLocationInfo extends Model
 {
 
-    protected $table = 'stock_location_info';
+    protected $table = 'stock_location_infos';
 
     protected $fillable = [
         'product_id',
@@ -26,6 +26,6 @@ class StockLocationInfo extends Model
 
     public function location()
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsTo(Location::class, 'location_id', 'id');
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->string('address');
             $table->string('mobile');
             $table->enum('kind', ['CUSTOMER', 'SUPPLIER']);
-            $table->timestamps();
+$table->timestamps();
 
             $table->unsignedBigInteger('ledger_id')->nullable();
             $table->foreign('ledger_id')->references('id')->on('ledgers');

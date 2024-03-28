@@ -19,7 +19,7 @@ return new class extends Migration
             $table->enum('kind', ['PRODUCT', 'LEDGER']);
             $table->double('rate');
             $table->double('quantity');
-            $table->timestamps();
+$table->timestamps();
         });
     }
 

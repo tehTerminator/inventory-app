@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Ledger;
 use Illuminate\Database\Seeder;
+use App\Models\Contact;
 
 class LedgerSeeder extends Seeder
 {
@@ -14,21 +15,21 @@ class LedgerSeeder extends Seeder
      */
     public function run()
     {
-        $data = [
-            [
-                'title' => 'Cash', 
-                'group_id' => 2, 
-                'can_receive_payment' => true
-            ],
-            [
-                'title' => 'Walk in Customer',
-                'group_id' => 3,
-                'can_receive_payment' => false
-            ],
-        ];
+        Ledger::create([
+            'title' => 'Cash', 
+            'kind' => 'CASH', 
+            'can_receive_payment' => true
+        ]);
 
-        foreach($data as $row) {
-            Ledger::create($row);
-        }
+        $walkInCustomer = Ledger::create([
+            'title' => 'Walk-in Customer',
+            'kind' => 'RECEIVABLE',
+            'can_receive_payment' => false
+        ]); 
+
+        $contact = Contact::where('title', 'Walk-in Customer')->first();
+        $contact->ledger_id = $walkInCustomer->id;
+        $contact->save();
+        
     }
 }

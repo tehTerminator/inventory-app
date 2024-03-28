@@ -6,13 +6,12 @@ use App\Models\Product;
 use App\Models\StockLocationInfo;
 use App\Models\StockTransferInfo;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
-    public static function createProduct(string $title, $rate, $location_id = 0, $quantity = 0)
+    public static function createProduct(string $title, float $rate, int $location_id = 0, int $quantity = 0)
     {
         DB::beginTransaction();
 
@@ -48,7 +47,7 @@ class ProductService
             return $product;
         } catch (\Exception $e) {
             DB::rollBack();
-            return response($e, 500);
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -79,8 +78,8 @@ class ProductService
     ) {
         try {
             $location_info = StockLocationInfo::where('location_id', $location_id)
-            ->where('product_id', $product_id)
-            ->first();
+                ->where('product_id', $product_id)
+                ->first();
             $location_info->quantity -= $quantity;
             $location_info->save();
         } catch (\Exception $e) {
@@ -88,26 +87,16 @@ class ProductService
         }
     }
 
-    public static function searchProductFromLocation($location_id, $title)
+    public static function getProductsFromLocation(int $location_id)
     {
 
-        $product = Product::where('title', $title)
-            ->whereIn('id', function ($query) use ($location_id) {
-                $query->select('product_id')
-                    ->from('stock_location_info')
-                    ->where('location_id', $location_id);
-            })
-            ->get();
+        $product = Product::whereIn('id', function ($query) use ($location_id) {
+            $query->select('product_id')
+                ->from('stock_location_info')
+                ->where('location_id', $location_id);
+        })
+        ->get();
 
         return $product;
-    }
-
-    public static function getProducts(Request $request)
-    {
-        $pageLength = $request->input('pageLength', 10);
-        $currentPage = $request->input('currentPage', 1);
-        $skip = ($currentPage - 1) * $pageLength;
-
-        return Product::skip($skip)->take($pageLength)->get();
     }
 }
