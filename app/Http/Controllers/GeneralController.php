@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use App\Models\Ledger;
-use App\Models\Bundle;
 use Exception;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 
 class GeneralController extends Controller
@@ -32,12 +31,6 @@ class GeneralController extends Controller
         'bundles__templates',
         'detailed_transactions',
         'vouchers'
-    ];
-
-    private $TYPE = [
-        'PRODUCT' => 0,
-        'LEDGER' => 1,
-        'BUNDLE' => 2,
     ];
 
     public function getById(string $table, int $id)
@@ -76,33 +69,61 @@ class GeneralController extends Controller
         return response()->json(["message" => "Successfully Deleted Item"]);
     }
 
-    public function getGeneralItems()
+    public function getGeneralItems(Request $request)
     {
-        $generalItems = Cache::remember('generalItem', 3600, function () {
-            $products = Product::select('id', 'title', 'rate')->get();
-            $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
-            $bundles = Bundle::select('id', 'title', 'rate')->get();
 
-            $items = [];
+        $this->validate($request, ['locationId' => 'required|exists:locations,id']);
+        $locationId = $request->input('locationId');
 
-            foreach ($products as $item) {
-                $item['type'] = $this->TYPE['PRODUCT'];
-                array_push($items, $item);
+        $generalItems = Cache::remember(
+            'generalItem' . $locationId,
+            3600,
+            function () use ($locationId) {
+
+                $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
+
+                $bundles = DB::table('bundles AS b')
+                    ->select('b.id', 'b.title', 'b.rate')
+                    ->leftJoin('bundles__templates AS bt', 'b.id', '=', 'bt.bundle_id')
+                    ->leftJoin('stock_location_infos AS st', 'bt.kind', '=', 'st.product_id')
+                    ->where(function ($query) use ($locationId) {
+                        $query->where('bt.kind', '=', 'LEDGER')
+                            ->orWhere(function ($query) use ($locationId) {
+                                $query->where('bt.kind', '=', 'PRODUCT')
+                                    ->whereNull('st.product_id')
+                                    ->orWhere('st.location_id', '=', $locationId);
+                            });
+                    })
+                    ->distinct()
+                    ->get();
+
+                $products = DB::table('stock_location_infos')
+                    ->join('products', 'stock_location_infos.product_id', '=', 'products.id')
+                    ->where('stock_location_infos.location_id', $locationId)
+                    ->get();
+
+
+                $items = [];
+
+                foreach ($products as $item) {
+                    $item->type = 'PRODUCT';
+                    array_push($items, $item);
+                }
+
+                foreach ($ledgers as $item) {
+                    $item->type = 'LEDGER';
+                    $item['rate'] = 0;
+                    array_push($items, $item);
+                }
+
+                foreach ($bundles as $item) {
+                    $item->type = 'BUNDLE';
+                    array_push($items, $item);
+                }
+
+                return $items;
             }
-
-            foreach ($ledgers as $item) {
-                $item['type'] = $this->TYPE['LEDGER'];
-                $item['rate'] = 0;
-                array_push($items, $item);
-            }
-
-            foreach ($bundles as $item) {
-                $item['type'] = $this->TYPE['BUNDLE'];
-                array_push($items, $item);
-            }
-
-            return $items;
-        });
+        );
 
         return response()->json($generalItems);
     }
