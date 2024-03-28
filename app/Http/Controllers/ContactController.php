@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contact;
 use Illuminate\Http\Request;
+use App\Models\Ledger;
 
 class ContactController extends Controller
 {
@@ -45,16 +46,32 @@ class ContactController extends Controller
             'title' => 'required|unique:App\Models\Contact,title',
             'address' => 'required',
             'mobile' => 'required',
+            'kind' => 'required|in:CUSTOMER,SUPPLIER',
         ]);
+    
+        $ledger_id = $request->input('ledger');
 
-        $contact = new Contact();
+        if( is_numeric($ledger_id) ) {
+            $this->validate($request, [
+                'ledger' => 'exists:ledgers,id'
+            ]);
+        } else if ($ledger_id === 'CREATE_NEW') {
+            $kind = $request->kind === 'CUSTOMER' ? 'RECEIVABLE' : 'PAYABLE';
+            $ledger = Ledger::create([
+                'title' => $request->title,
+                'kind' => $kind
+            ]);
 
-        $contact->title = $request->input('title');
-        $contact->address = $request->input('address');
-        $contact->mobile = $request->input('mobile');
-        $contact->kind = $request->input('kind');
+            $ledger_id = $ledger->id;
+        }
 
-        $contact->save();
+        $contact = Contact::create([
+            'title' => $request->input('title'),
+            'address' => $request->input('address'),
+            'mobile' => $request->input('mobile'),
+            'kind' => $request->input('kind'),
+            'ledger_id' => $ledger_id
+        ]);
 
         return response()->json($contact);
     }
