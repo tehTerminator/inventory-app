@@ -51,12 +51,17 @@ class GeneralController extends Controller
 
         // Apply options if provided
         $queryParams = request()->query();
+        $data = NULL;
 
         if (is_array($queryParams)) {
             $this->applyWhereClaus($query, $queryParams);
+            $data = $query->get();
+        } else {
+            $data = Cache::remember($table, 3600, function() use ($query) {
+                return $query->get();
+            });
         }
-
-        return response()->json($query->get());
+        return response()->json($data);
     }
 
     public function destroy(string $table, int $id)
