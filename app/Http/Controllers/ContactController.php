@@ -5,14 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use App\Models\Ledger;
+use Illuminate\Support\Facades\Cache;
 
 class ContactController extends Controller
 {
-    public function indexCustomer(Request $request)
+    public function indexContacts()
     {
-        $contact = Contact::customer();
-        $title = $request->input('title', NULL);
-        return response()->json($contact->where('title', 'LIKE', "$title%")->take(5)->get());
+        $contact = Cache::remember('contacts', 3600, function() {
+            return Contact::all();
+        });
+        return response()->json($contact);
     }
 
     public function indexSupplier(Request $request)
@@ -22,7 +24,7 @@ class ContactController extends Controller
         return response()->json($contact->where('title', 'LIKE', "$title%")->take(5)->get());
     }
 
-    public function indexContacts(Request $request)
+    public function indexContactByTitle(Request $request)
     {
         $title = $request->input('title', NULL);
         $contact = Contact::where('title', 'LIKE', "$title%")
