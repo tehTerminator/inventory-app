@@ -23,19 +23,20 @@ class BundleService {
     // ];
 
     public static function selectBundle() {
-        $bundles = Cache::remember('Bundles', 6000, function() {
-            return Bundle::with(['templates'])->get();
-        });
+        // $bundles = Cache::remember('Bundles', 3600, function() {
+        //     return Bundle::with(['templates'])->get();
+        // });
+        $bundles = Bundle::with('templates')->get();
         return $bundles;
     }
 
     public static function createBundle(string $title, float $rate) {
 
+        Cache::forget('Bundles');
         return Bundle::create([
             'title' => $title,
             'rate' => $rate
         ]);
-        Cache::forget('Bundles');
     }
 
     public static function updateBundle(int $id, string $title, float $rate) {
@@ -57,8 +58,8 @@ class BundleService {
         try {
             BundleTemplate::where('Bundle_id', $Bundle->id)->delete();
             $Bundle->delete();
-            Cache::forget('Bundles');
             DB::commit();
+            Cache::forget('Bundles');
         } catch (\Exception $ex) {
             DB::rollBack();
         }
@@ -73,6 +74,7 @@ class BundleService {
         float $rate,
         float $quantity
     ) {
+        Cache::forget('Bundles');
         return BundleTemplate::create([
             'bundle_id' => $bundle_id,
             'item_id' => $item_id,
@@ -84,6 +86,7 @@ class BundleService {
 
     public static function deleteTemplate(int $id) {
         BundleTemplate::findOrFail($id)->delete();
+        Cache::forget('Bundles');
         return response()->json(['message'=>'Template Deleted Successfully']);
     }
 

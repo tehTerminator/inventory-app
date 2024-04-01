@@ -16,6 +16,12 @@ class BalanceSnapshot extends Model {
         'ledger_id', 'opening', 'closing'
     ];
 
+    protected $casts = [
+        'ledger_id' => 'integer',
+        'opening' => 'double',
+        'closing' => 'double'
+    ];
+
     public function ledger() {
         return $this->belongsTo(Ledger::class);
     }

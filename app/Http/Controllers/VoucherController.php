@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Voucher;
 use App\Services\VoucherService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class VoucherController extends Controller
 {

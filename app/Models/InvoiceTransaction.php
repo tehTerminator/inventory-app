@@ -6,13 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class InvoiceTransaction extends Model
 {
+    protected $table = 'invoices_transactions';
+
     protected $fillable = [
         'invoice_id',
-        'description',
+        'item_id',
+        'item_type',
         'user_id',
         'quantity',
         'rate',
         'discount',
+        'is_child'
+    ];
+
+    protected $hidden = [
+        'is_child'
     ];
 
     public function invoice()
@@ -23,10 +31,5 @@ class InvoiceTransaction extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function product()
-    {
-        return $this->belongsTo(Product::class);
     }
 }

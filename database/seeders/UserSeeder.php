@@ -18,6 +18,7 @@ class UserSeeder extends Seeder
     {
         // Create a Admin Role
         DB::table('roles')->insert(['name' => 'admin', 'description' => 'A SuperUser']);
+        DB::table('roles')->insert(['name' => 'user', 'description' => 'A General User']);
         // Assign the admin role to the first user
 
         User::create([

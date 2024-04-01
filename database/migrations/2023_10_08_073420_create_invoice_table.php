@@ -17,7 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('contact_id');
             $table->unsignedBigInteger('location_id');
             $table->boolean('paid');
-            $table->double('amount');
+            $table->double('gross_amount');
+            $table->double('discount_amount');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
             

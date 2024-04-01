@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Ledger;
 use App\Models\Voucher;
 use Illuminate\Support\Carbon;
-use App\Models\BalanceSnapShot;
+use App\Models\BalanceSnapshot;
 use Illuminate\Support\Facades\DB;
 
 class LedgerService
@@ -52,63 +52,75 @@ class LedgerService
         return $ledger;
     }
 
-    public static function takeCompleteBalanceSnapshot()
+    public static function autoUpdateBalance()
     {
+
+        // return $ledgertoShow;
+
         DB::beginTransaction();
 
         try {
-            Ledger::select('id', 'balance')->each(function ($ledger) {
-                $opening = BalanceSnapShot::where('ledger_id', $ledger->id)
-                    ->orderBy('created_at', 'desc')
-                    ->first()->balance;
-                $credit = self::reduceAmount($ledger->id);
-                $debit = self::increaseAmount($ledger->id);
-                $closing = $opening - $credit + $debit;
+            $ledgers = Ledger::all();
+            foreach ($ledgers as $ledger) {
+                # code...
+                self::autoSetBalanceById($ledger->id);
+            }
 
-                self::takeLedgerBalanceSnapshot($ledger->id, $opening, $closing);
-            });
+            $ledgertoShow = Ledger::whereIn('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->toArray();
             DB::commit();
+            return BalanceSnapshot::whereDate('created_at', Carbon::now())->whereIn('ledger_id', $ledgertoShow)
+                ->with('ledger')->get();
         } catch (\Exception $ex) {
             DB::rollBack();
-            return response($ex);
         }
     }
 
-    public static function takeLedgerBalanceSnapshot(int $ledger_id, float $opening, float $closing)
+    public static function updateBalance(int $id, $opening, $closing)
     {
-        $row = BalanceSnapShot::where('ledger_id', $ledger_id)
-            ->whereDate('created_at', Carbon::now())
-            ->first();
-        if (empty($row)) {
-            BalanceSnapShot::new([
-                'ledger_id' => $ledger_id,
+        $balance = BalanceSnapshot::whereDate('created_at', Carbon::now())
+            ->with('ledger')
+            ->where('ledger_id', $id)->first();
+
+        if (!$balance) {
+            BalanceSnapshot::create([
+                'ledger_id' => $id,
                 'opening' => $opening,
                 'closing' => $closing
             ]);
-            return;
+        } else {
+            $balance->opening = $opening;
+            $balance->closing = $closing;
+            $balance->save();
         }
 
-        $row->opening = $opening;
-        $row->closing = $closing;
-        $row->save();
-        return;
+        return $balance;
     }
 
-    public static function getValidationRules($uniqueTitle = false, $idRequired = false)
+    public static function autoSetBalanceById(int $ledger_id)
     {
-        $rules = self::$validationRules;
-        
-        if ($uniqueTitle) {
-            array_push($rules['title'], 'unique:App\Models\Ledger');
-        }
-
-        if ($idRequired) {
-            array_push($rules['id'], 'required');
+        $balance = BalanceSnapshot::where('ledger_id', $ledger_id)
+            ->whereDate('created_at', Carbon::now())
+            ->first();
+        if (empty($balance)) {
+            $opening  = self::getLatestClosing($ledger_id);
         } else {
-            unset($rules['id']);
+            $opening = $balance->opening;
         }
+        $credit = self::reduceAmount($ledger_id);
+        $debit = self::increaseAmount($ledger_id);
+        $closing = $opening - $credit + $debit;
+        $ledger = self::updateBalance($ledger_id, $opening, $closing);
+        return $ledger;
+    }
 
-        return $rules;
+    public static function getLatestClosing(int $ledger_id)
+    {
+        $balance  = BalanceSnapshot::where('ledger_id', $ledger_id)
+            ->orderBy('id', 'desc')->first();
+        if (empty($balance)) {
+            return 0;
+        }
+        return $balance->closing;
     }
 
     private static function reduceAmount(int $ledger_id)
@@ -125,6 +137,23 @@ class LedgerService
             ->whereDate('created_at', Carbon::now())
             ->sum('amount');
         return $debitAmount;
+    }
+
+    public static function getValidationRules($uniqueTitle = false, $idRequired = false)
+    {
+        $rules = self::$validationRules;
+
+        if ($uniqueTitle) {
+            array_push($rules['title'], 'unique:App\Models\Ledger');
+        }
+
+        if ($idRequired) {
+            array_push($rules['id'], 'required');
+        } else {
+            unset($rules['id']);
+        }
+
+        return $rules;
     }
 
     public function __construct()

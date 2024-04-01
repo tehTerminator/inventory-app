@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\BalanceSnapShot;
+use App\Models\BalanceSnapshot;
 use App\Models\Ledger;
 use Illuminate\Http\Request;
 use App\Services\LedgerService;
@@ -12,10 +12,9 @@ class LedgerController extends Controller
 {
     public function __construct()
     {
-        //
     }
 
-    public function select() {
+    public function indexLedgers() {
         return response()->json(Ledger::all());
     }
 
@@ -45,13 +44,25 @@ class LedgerController extends Controller
         );
     }
 
-    public function takeBalanceSnapshot() {
-        return response()->json(LedgerService::takeCompleteBalanceSnapshot());
+    public function autoUpdateBalance() {
+        return response()->json(LedgerService::autoUpdateBalance());
+    }
+
+    public function updateBalance(Request $request) {
+        $this->validate($request, [
+            'id' => 'required|integer|exists:App\Models\Ledger,id',
+            'opening' => 'required|numeric',
+            'closing' => 'required|numeric',
+        ]);
+        $balance = LedgerService::updateBalance($request->id, $request->opening, $request->closing);
+        return response()->json($balance);
     }
 
     public function selectBalance(Request $request) {
         $date = $request->query('date', Carbon::now());
-        $data = BalanceSnapshot::whereDate('created_at', $date)
+
+        $assets = Ledger::whereIn('kind', ['BANK', 'CASH', 'WALLET'])->pluck('id')->toArray();
+        $data = BalanceSnapshot::whereDate('created_at', $date)->whereIn('ledger_id', $assets)
         ->with(['ledger'])->get();
         return response($data);
     }

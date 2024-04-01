@@ -12,6 +12,10 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
 
+    public function indexProducts() {
+        return response()->json(Product::all());
+    }
+
     public function createProduct(Request $request)
     {
         $this->validate($request, [

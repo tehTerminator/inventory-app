@@ -19,7 +19,6 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->double('quantity');
             $table->double('rate');
-            $table->double('discount');
             $table->boolean('is_child')->default(false);
             $table->timestamps();
 

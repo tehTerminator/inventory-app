@@ -17,13 +17,7 @@ class RulesService {
             'rules' => [
                 'kind' => 'required|'
             ]
-        ],
-        'groups' => [
-            'class' => Group::class,
-            'rules' => [
-
-            ]
-        ],
+            ],
         'invoices' => [
             'class' => Invoice::class,
             'rules' => []
@@ -67,11 +61,7 @@ class RulesService {
         'bundles__templates' => [
             'class' => BundleTemplate::class,
             'rules' => []
-        ],
-        'detailed_transactions' => [
-            'class' => DetailedTransaction::class,
-            'rules' => []
-        ],    
+        ], 
         'vouchers' => [
             'class' => Voucher::class,
             'rules' => [

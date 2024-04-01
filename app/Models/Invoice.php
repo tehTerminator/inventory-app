@@ -16,15 +16,13 @@ class Invoice extends Model
         'contact_id',
         'location_id',
         'paid',
-        'amount',
+        'gross_amount',
+        'discount_amount',
         'user_id',
     ];
 
-    protected $casts = [
-        'location_id' => 'integer',
-        'contact_id' => 'integer',
-        'user_id' => 'integer',
-        'amount' => 'double',
+    protected $hidden = [
+        'updated_at'
     ];
 
     public function contact()

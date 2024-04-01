@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Services\InvoiceService;
+use App\Models\Invoice;
 
 class InvoiceController extends Controller
 {
@@ -20,29 +21,47 @@ class InvoiceController extends Controller
        return response()->json($data);
     }
 
+    public function getById($id) {
+        $data = InvoiceService::getInvoiceById($id);
+        return response()->json($data);
+    }
+
     public function store(Request $request) {
 
 
         $this->validate($request, [
-            'kind' => 'required|in:sales,purchase',
-            'contact_id' => 'required|integer|min:1|exists:contacts,id',
-            'location_id' => 'required|integer|min:1|exists:locations,id',
-            'amount' => 'required|numeric|min:1',
+            'invoice.kind' => 'required|in:SALES,PURCHASE',
+            'invoice.contact_id' => 'required|integer|min:1|exists:contacts,id',
+            'invoice.location_id' => 'required|integer|min:1|exists:locations,id',
+            'invoice.gross_amount' => 'required|numeric|min:1',
+            'invoice.discount_amount' => 'min:0'
         ]);
 
         $this->validate($request, [
-            'transactions.*.product_id' => 'required|integer|min:1|exists:products,id',
-            'transaction.*.description' => 'string',
-            'transaction.*.quantity' => 'required|numberic|min:1',
-            'transaction.*.rate' => 'required|numeric|min:1',
-            'transaction.*.gst' => 'required|numeric',
-            'transaction.*.amount' => 'required|numeric|min:1'
+            'invoice.transactions.*.item_id' => 'required|integer|min:1',
+            'invoice.transactions.*.item_type' => 'string|in:PRODUCT,LEDGER,BUNDLE',
+            'invoice.transactions.*.quantity' => 'required|numeric|min:1',
+            'invoice.transactions.*.rate' => 'required|numeric|min:1',
+        ]);
+
+        $this->validate($request, [
+            'vouchers.*.cr' => 'required|integer|min:1|exists:ledgers,id',
+            'vouchers.*.dr' => 'required|integer|min:1|exists:ledgers,id',
+            'vouchers.*.amount' => 'required|numeric|min:1',
         ]);
         
         $user_id = Auth::user()->id;
         
         $response = InvoiceService::createNewInvoice($request, $user_id);
-        return response($response); 
+        if($response->id) {
+            // return response($response);
+            $invoice = Invoice::where('id', $response->id)->with(['transactions' => function ($query) {
+                $query->where('is_child', false);
+            }])->first();
+            return response()->json($invoice);
+        } else {
+            return response($response);
+        }
     }
 
     public function delete(int $id) {

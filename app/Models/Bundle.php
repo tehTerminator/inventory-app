@@ -13,6 +13,10 @@ class Bundle extends Model
         'rate'
     ];
 
+    protected $hidden = [
+        'created_at', 'updated_at'
+    ];
+
     public function templates()
     {
         return $this->hasMany(BundleTemplate::class, 'bundle_id');

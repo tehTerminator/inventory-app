@@ -8,6 +8,11 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use App\Models\Product;
+use App\Models\User;
+use App\Models\Bundle;
+use App\Models\Location;
+use App\Models\Contact;
 
 
 class GeneralController extends Controller
@@ -33,6 +38,17 @@ class GeneralController extends Controller
         'vouchers'
     ];
 
+    public function indexData() {
+        $data = [];
+        $data['products'] = Product::all();
+        $data['ledgers'] = Ledger::all();
+        $data['users'] = User::select(['id', 'name'])->get();
+        $data['bundles'] =  Bundle::with('templates')->get();
+        $data['locations'] = Location::all();
+        $data['contacts'] = Contact::all();
+        return response()->json($data);
+    }
+
     public function getById(string $table, int $id)
     {
         $query = $this->validateAndGetQuery($table . 's');
@@ -57,9 +73,7 @@ class GeneralController extends Controller
             $this->applyWhereClaus($query, $queryParams);
             $data = $query->get();
         } else {
-            $data = Cache::remember($table, 3600, function() use ($query) {
-                return $query->get();
-            });
+            return $query->get();
         }
         return response()->json($data);
     }

@@ -11,6 +11,10 @@ class BundleTemplate extends Model
     protected $fillable = [
         'bundle_id', 'item_id', 'kind', 'rate', 'quantity'
     ];
+
+    protected $hidden = [
+        'created_at', 'updated_at'
+    ];
     
     public function bundle()
     {

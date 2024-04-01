@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('kind', ['CUSTOMER', 'SUPPLIER']);
 $table->timestamps();
 
-            $table->unsignedBigInteger('ledger_id')->nullable();
+            $table->unsignedBigInteger('ledger_id')->default(1);
             $table->foreign('ledger_id')->references('id')->on('ledgers');
         });
     }

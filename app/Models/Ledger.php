@@ -15,6 +15,10 @@ class Ledger extends Model {
         'title', 'kind', 'can_receive_payment'
     ];
 
+    protected $hidden = [
+        'created_at', 'updated_at'
+    ];
+
     public function balance_snapshot() {
         return $this->hasMany(BalanceSnapshot::class);
     }

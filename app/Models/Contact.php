@@ -17,11 +17,17 @@ class Contact extends Model
         'ledger_id'
     ];
 
-    protected $hidden = [
-        'kind', 'created_at', 'updated_at'
+    protected $casts= [
+        'ledger_id' => 'integer'
     ];
 
-    public function ledger() {
+    protected $hidden = [
+        'created_at', 'updated_at'
+    ];
+
+
+    public function ledger()
+    {
         return $this->hasOne(Ledger::class);
     }
 
@@ -35,11 +41,13 @@ class Contact extends Model
         return $this->hasMany(InvoicePaymentInfo::class);
     }
 
-    public function scopeCustomer($query) {
+    public function scopeCustomer($query)
+    {
         return $query->where('kind', 'CUSTOMER');
     }
 
-    public function scopeSupplier($query) {
+    public function scopeSupplier($query)
+    {
         return $query->where('kind', 'SUPPLIER');
     }
 }

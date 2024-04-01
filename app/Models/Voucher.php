@@ -27,6 +27,12 @@ class Voucher extends Model {
         'immutable'
     ];
 
+    protected $casts  = [
+        'cr' => 'integer',
+        'dr' => 'integer',
+        'amount' => 'double',
+    ];
+
     public function creditor() {
         return $this->belongsTo(Ledger::class, 'cr', 'id');
     }
@@ -37,5 +43,9 @@ class Voucher extends Model {
 
     public function user() {
         return $this->belongsTo(User::class);
+    }
+
+    public function invoicePaymentInfo() {
+        return $this->belongsTo(InvoicePaymentInfo::class);
     }
 }

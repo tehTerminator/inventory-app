@@ -26,8 +26,8 @@ class InvoicePaymentInfo extends Model
         return $this->belongsTo(Contact::class);
     }
 
-    public function voucher()
+    public function vouchers()
     {
-        return $this->belongsTo(Voucher::class);
+        return $this->hasMany(Voucher::class);
     }
 }
