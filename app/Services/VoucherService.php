@@ -11,26 +11,26 @@ use Illuminate\Support\Facades\DB;
 class VoucherService
 {
 
-    public static function select(int $id, string $from, string $to) {
+    public static function select(int $id, string $from, string $to)
+    {
         $voucher = NULL;
-        if($from === $to) {
+        if ($from === $to) {
             $voucher = Voucher::whereDate('created_at', $from);
-        }
-        else {
+        } else {
             $to = Carbon::createFromFormat('Y-m-d', $to)->addDay(1);
             $voucher = Voucher::whereBetween('created_at', [$from, $to]);
         }
         $data = $voucher
-        ->where(function($query) use ($id) {
-            $query->where('cr', $id)
-            ->orWhere('dr', $id);
-        })->with(['creditor', 'debtor'])
-        ->orderBy('created_at', 'ASC')
-        ->get();
+            ->where(function ($query) use ($id) {
+                $query->where('cr', $id)
+                    ->orWhere('dr', $id);
+            })->with(['creditor', 'debtor'])
+            ->orderBy('created_at', 'ASC')
+            ->get();
 
         $opening = BalanceSnapshot::where('ledger_id', $id)
-        ->whereDate('created_at', $from)
-        ->pluck('opening')->pop();
+            ->whereDate('created_at', $from)
+            ->pluck('opening')->pop();
 
         if (is_null($opening)) {
             $opening = 0;
@@ -88,23 +88,36 @@ class VoucherService
             $voucher->amount = $voucher_data['amount'];
             $voucher->narration = $voucher_data['narration'];
             $voucher->save();
-            
-            DB::commit();
 
+            DB::commit();
         } catch (\Exception $ex) {
             DB::rollBack();
             return response($ex, 500);
         }
-        
-        return $voucher;
 
+        return $voucher;
     }
 
-    public function delete(int $id) {
+    public function delete(int $id)
+    {
         Voucher::findOrFail($id)->softDeletes();
         return response('Deleted Successfully', 204);
     }
 
+    public static function dayBook(string $date)
+    {
+        return Voucher::select(
+            DB::raw("
+                TRUNCATE(sum(vouchers.amount), 2) as amount
+            "),
+            DB::raw("cr, dr")
+        )->whereDate('created_at', $date)
+            ->with(['creditor', 'debtor'])
+            ->groupBy(['cr', 'dr'])->get();
+    }
 
-    public function __construct() { }
+
+    public function __construct()
+    {
+    }
 }

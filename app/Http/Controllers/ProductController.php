@@ -20,8 +20,8 @@ class ProductController extends Controller
     {
         $this->validate($request, [
             'title' => 'required|unique:products,title',
-            'quantity' => 'numeric',
-            'rate' => 'numeric|min:1',
+            'quantity' => 'decimal:0,2',
+            'rate' => 'decimal:0,2|min:1',
             'location_id' => 'numeric|exists:locations,id'
         ]);
 
@@ -43,7 +43,7 @@ class ProductController extends Controller
 
     public function indexProductByLocation(Request $request) {
         $this->validate($request, [
-            'location' => 'numeric'
+            'location' => 'integer'
         ]);
 
         $location = $request->input('locaiton');
@@ -64,7 +64,7 @@ class ProductController extends Controller
             'myLocation' => 'required|exists:locations,id',
             'toLocation' => 'required|exists:locations,id',
             'narration' => 'required|string',
-            'quantity' => 'required|numeric|min:1'
+            'quantity' => 'required|decimal:0,2|min:1'
         ]);
 
         $info = StockTransferInfo::create([
@@ -75,6 +75,16 @@ class ProductController extends Controller
             'user_id' => Auth::user()->id,
             'quantity' => $request->input('quantity'),
         ]);
+
+        $product_id = $request->input('product');
+        $fromLocation = $request->input('myLocation');
+        $toLocation = $request->input('toLocation');
+        $quantity = $request->input('quantity');
+    
+        ProductService::addProduct($product_id, $toLocation, $quantity);
+        ProductService::consumeProduct($product_id, $fromLocation, $quantity);
+
+        
         
         return response()->json($info);
     }

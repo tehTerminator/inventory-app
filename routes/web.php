@@ -28,6 +28,7 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     // $router->group(['prefix' => 'get'], function () use ($router) {
 
     $router->get('data', ['uses' => 'GeneralController@indexData']);
+    $router->get('day-book', ['uses' => 'VoucherController@dayBook']);
 
     $router->get('balance', ['uses' => 'LedgerController@selectBalance']);
 
@@ -43,12 +44,14 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
 
     $router->get('ledger-statement', ['uses' => 'VoucherController@select']);
 
-    
     $router->get('location/inventory', ['uses' => 'LocationController@indexInventory']);
     $router->get('location/users', ['uses' => 'LocationController@indexUsers']);
-    
+
     $router->get('products', ['uses' => 'ProductController@indexProducts']);
-    
+
+    $router->get('todaysIncome', ['uses' => 'VoucherController@todaysIncome']);
+    $router->get('todaysExpense', ['uses' => 'VoucherController@todaysExpense']);
+
     $router->get('users', ['uses' => 'UsersController@index']);
     $router->get('user/locations', ['uses' => 'UsersController@indexLocations']);
 
@@ -89,6 +92,10 @@ $router->group(['prefix' => 'update', 'middleware' => 'auth'], function () use (
     $router->put('contact', ['uses' => 'ContactController@update']);
     $router->put('product-group', ['uses' => 'ProductController@updateProductGroup']);
     $router->put('voucher', ['uses' => 'VoucherController@update']);
+});
+
+$router->group(['prefix' => 'destroy', 'middleware' => 'auth'], function () use ($router) {
+    $router->delete('invoice/{id:[0-9]+}', ['uses' => 'InvoiceController@delete']);
 });
 
 $router->delete(

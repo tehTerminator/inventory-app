@@ -75,6 +75,7 @@ class InvoiceService
         try {
 
             $invoice_data = $request->input('invoice');
+            $invoice = null;
 
             $invoice = Invoice::create([
                 'kind' => $invoice_data['kind'],
@@ -86,11 +87,12 @@ class InvoiceService
                 'user_id' => $user_id,
             ]);
 
-            if ($invoice) {
-                array_push($message, 'Invoice Created With Invoice Id #' . $invoice->id);
+            if (!$invoice->id) {
+                throw new \Exception('Unable to Create New Invoice.');
             } else {
-                throw new \Exception('Unable to Create Invoice');
+                array_push($message, 'Invoice Created Successfully with #' . $invoice->id);
             }
+
 
 
             $t = self::createTransactions(
@@ -98,25 +100,42 @@ class InvoiceService
                 $invoice_data['transactions']
             );
 
+            $transactions = InvoiceTransaction::where(
+                [
+                    'invoice_id' => $invoice->id,
+                    'is_child' => false
+                ]
+            )->get();
+            $invoice['transactions'] = $transactions;
+
+            array_push($message, 'Receiving From createTransactions');
             array_push($message, $t);
 
-
             if ($invoice->kind === 'SALES') {
-                $sv = self::createSalesVoucher(
-                    $invoice->contact_id,
-                    $invoice->id,
-                    $user_id
-                );
+                try {
+                    $sv = self::createSalesVoucher(
+                        $invoice->contact_id,
+                        $invoice->id,
+                        $user_id
+                    );
+                } catch (\Exception $e) {
+                    array_push($message, 'Error While Storing Sales Voucher');
+                    array_push($message, 'Invoice->id' . $invoice->id);
+                    array_push($message, $e->getMessage());
+                }
                 array_push($message, $sv);
+                array_push($message, 'Received from createSaleVoucher');
             } else {
                 $pv = self::createPurchaseVoucher(
                     $invoice->contact_id,
                     $invoice->id,
                     $user_id
                 );
+                array_push($message, 'Received from createPurchaseVoucher');
                 array_push($message, $pv);
             }
 
+            array_push($message, 'Received from createDiscount');
             self::createDiscount($invoice);
 
             $cv = self::createVouchers($request->input('vouchers'), $invoice);
@@ -238,14 +257,18 @@ class InvoiceService
         if (is_null($narration)) {
             $narration = 'Payment Invoice #' . $t->invoice_id;
         }
-        Voucher::create([
-            'cr' => $t->item_id,
-            'dr' => $dr_ledger_id,
-            'narration' => $narration,
-            'amount' => InvoiceService::calcNetAmount($t->quantity, $t->rate),
-            'user_id' => $t->user_id,
-            'immutable' => true
-        ]);
+
+        $amount = InvoiceService::calcNetAmount($t->quantity, $t->rate);
+        if ($amount > 0) {
+            Voucher::create([
+                'cr' => $t->item_id,
+                'dr' => $dr_ledger_id,
+                'narration' => $narration,
+                'amount' => $amount,
+                'user_id' => $t->user_id,
+                'immutable' => true
+            ]);
+        }
     }
 
     public static function createSalesVoucher(
@@ -253,26 +276,63 @@ class InvoiceService
         int $invoice_id,
         int $user_id
     ) {
+        $message = '';
+        try {
 
-        $transactions = InvoiceTransaction::where('item_type', 'PRODUCT')->where('invoice_id', $invoice_id)
-            ->get();
-        $amount = 0;
-        foreach ($transactions as $t) {
-            $amount += self::calcNetAmount($t->quantity, $t->rate);
-        }
-        $v = Voucher::create([
-            'cr' => self::getSalesLedgerId(),
-            'dr' => self::getCustomerLedger($contact_id),
-            'narration' => 'Sales Invoice #' . $invoice_id,
-            'amount' => $amount,
-            'immutable' => true,
-            'user_id' => $user_id
-        ]);
+            $t_query = InvoiceTransaction::where(
+                [
+                    'item_type' => 'PRODUCT',
+                    'invoice_id' => $invoice_id
+                ]
+            )
+                ->toSql();
 
-        if ($v) {
-            return 'Successfully Created Sales Voucher #' . $v->id;
-        } else {
-            return 'Failed to Create A Sales Voucher';
+            $message .= $t_query;
+
+            $transactions = InvoiceTransaction::where(
+                [
+                    'item_type' => 'PRODUCT',
+                    'invoice_id' => $invoice_id
+                ]
+            )
+                ->get();
+
+            if (is_null($transactions) || count($transactions) <= 0 || empty($transactions)) {
+                return;
+            }
+
+            $amount = 0;
+            foreach ($transactions as $t) {
+                $amount += self::calcNetAmount($t->quantity, $t->rate);
+            }
+
+            $message .= 'Got Transactions length ' . count($transactions);
+
+            $v = NULL;
+
+            $cr = self::getSalesLedgerId();
+            $dr = self::getCustomerLedger($contact_id);
+
+            $message .= '$cr = ' . $cr . ' $dr = ' . $dr;
+
+            if ($amount > 0) {
+                $v = Voucher::create([
+                    'cr' => $cr,
+                    'dr' => $dr,
+                    'narration' => 'Sales Invoice #' . $invoice_id,
+                    'amount' => $amount,
+                    'immutable' => true,
+                    'user_id' => $user_id
+                ]);
+            }
+
+            if (is_null($v) || empty($v)) {
+                return 'Successfully Created Sales Voucher #' . $v->id;
+            } else {
+                return 'Failed to Create A Sales Voucher';
+            }
+        } catch (\Exception $e) {
+            throw new \Exception('Failed inside createSalesVoucher ' . $e->getMessage() . $message);
         }
     }
 
@@ -297,7 +357,7 @@ class InvoiceService
             'user_id' => $user_id
         ]);
 
-        if ($v) {
+        if (!empty($v)) {
             return 'Successfully Created Purchase Voucher #' . $v->id;
         } else {
             return 'Failed to Create A Purchase Voucher';
@@ -320,6 +380,9 @@ class InvoiceService
             }
 
             foreach ($vouchers as $voucher) {
+                if ($voucher['amount'] <= 0) {
+                    continue;
+                }
                 $v = Voucher::create([
                     'cr' => $voucher['cr'],
                     'dr' => $voucher['dr'],
@@ -351,9 +414,14 @@ class InvoiceService
         }
     }
 
-    private static function createDiscount(Invoice $invoice) {
+    private static function createDiscount(Invoice $invoice)
+    {
+        if ($invoice->discount_amount <= 0) {
+            return;
+        }
+
         $discountLedger = Ledger::where('title', 'Discounts')->first();
-        if(empty($discountLedger)) {
+        if (empty($discountLedger)) {
             $discountLedger = Ledger::create(['title' => 'Discounts', 'kind' => 'EXPENSE']);
         }
 
@@ -371,19 +439,23 @@ class InvoiceService
 
     private static function getCustomerLedger($customer_id)
     {
-        $contact = Contact::findOrFail($customer_id);
+        try {
+            $contact = Contact::findOrFail($customer_id);
 
-        if (!is_null($contact->ledger_id)) {
-            return $contact->ledger_id;
-        }
+            if (!is_null($contact->ledger_id)) {
+                return $contact->ledger_id;
+            }
 
-        $ledger = Ledger::where('title', 'Walk-in Customer',)->get();
-        if (empty($ledger_id)) {
-            $ledger = Ledger::create(['title' => 'Walk-in Customer', 'kind' => 'RECEIVABLE']);
+            $ledger = Ledger::where('title', 'Walk-in Customer',)->get();
+            if (empty($ledger_id)) {
+                $ledger = Ledger::create(['title' => 'Walk-in Customer', 'kind' => 'RECEIVABLE']);
+                return $ledger->id;
+            }
             return $ledger->id;
-        }
+        } catch (\Exception $e) {
 
-        return $ledger->id;
+            throw new \Exception('Failed inside getCustomerLedger' . $e->getMessage());
+        }
     }
 
     private static function getSupplierLedger($customer_id)
@@ -405,21 +477,25 @@ class InvoiceService
 
     private static function getSalesLedgerId()
     {
-        $sales = Ledger::where('title', 'Sales Account')->first();
-        if (!$sales) {
-            $sales = Ledger::create([
-                'title' => 'Sales Account',
-                'kind' => 'SALES AC'
-            ]);
-        }
+        try {
+            $sales = Ledger::where('title', 'Sales Account')->first();
+            if (empty($sales)) {
+                $sales = Ledger::create([
+                    'title' => 'Sales Account',
+                    'kind' => 'SALES AC'
+                ]);
+            }
 
-        return $sales->id;
+            return $sales->id;
+        } catch (\Exception $e) {
+            throw new \Exception('Failed While Getting Sales Ledger.' . $e->getMessage());
+        }
     }
 
     private static function getPurchaseLedgerId()
     {
         $purchase = Ledger::where('title', 'Purchase Account')->first();
-        if (!$purchase) {
+        if (empty($purchase)) {
             $purchase = Ledger::create([
                 'title' => 'Purchase Account',
                 'kind' => 'PURCHASE AC'
@@ -431,7 +507,7 @@ class InvoiceService
 
 
 
-    private static function calcNetAmount(int $quantity, int $rate)
+    private static function calcNetAmount(float $quantity, float $rate)
     {
         return ($quantity * $rate);
     }
@@ -440,29 +516,48 @@ class InvoiceService
     {
         $today = Carbon::today(); // Get today's date object
 
-        $invoice = Invoice::where('created_at', '>=', $today->startOfDay())
-            ->where('created_at', '<=', $today->endOfDay())
-            ->find($invoice_id);
-        
-        if(empty($invoice)) {
-            return;
+        if ($invoice_id <= 0) {
+            return 'id is empty';
         }
 
-        $stockTransactions = StockTransferInfo::where('narration', 'like', '#' . $invoice->id)
-            ->get();
-        foreach ($stockTransactions as $row) {
-            StockTransferInfo::create([
-                'product_id' => $row->product_id,
-                'from_location_id' => $row->to_location_id,
-                'to_location_id' => $row->from_location_id,
-                'narration' => 'Deleted Invoice #' . $invoice->id,
-                'quantity' => $row->quantity,
-                'user_id' => $row->user_id,
-            ]);
+        $invoice = Invoice::find($invoice_id);
+
+        if (empty($invoice)) {
+            return 'Invoice Already Deleted';
         }
 
-        InvoiceTransaction::where('invoice_id', $invoice_id)->delete();
-        Invoice::find($invoice_id)->delete();
-        Voucher::where('narration', 'LIKE', '%' . $invoice_id)->delete();
+        DB::beginTransaction();
+
+        try {
+            $stockTransactions = StockTransferInfo::where('narration', 'like', '%#' . $invoice->id)
+                ->get();
+            foreach ($stockTransactions as $row) {
+                StockTransferInfo::create([
+                    'product_id' => $row->product_id,
+                    'from_location_id' => $row->to_location_id,
+                    'to_location_id' => $row->from_location_id,
+                    'narration' => 'Deleted Invoice #' . $invoice->id,
+                    'quantity' => $row->quantity,
+                    'user_id' => $row->user_id,
+                ]);
+
+                ProductService::addProduct($row->product_id, $row->from_location_id, $row->quantity);
+                ProductService::consumeProduct($row->product_id, $row->to_location_id, $row->quantity);
+            }
+
+            $paymentInfo = InvoicePaymentInfo::where('invoice_id', $invoice_id)->delete();
+            $transactions = InvoiceTransaction::where('invoice_id', $invoice_id)->delete();
+            $invoice = Invoice::find($invoice_id)->delete();
+            $voucher = Voucher::where('narration', 'LIKE', '%Invoice #' . $invoice_id)->delete();
+
+            $response = [
+                $paymentInfo, $transactions, $invoice, $voucher
+            ];
+            DB::commit();
+            return $response;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new \Exception($e->getMessage());
+        }
     }
 }

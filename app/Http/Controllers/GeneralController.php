@@ -96,10 +96,10 @@ class GeneralController extends Controller
 
         $generalItems = Cache::remember(
             'generalItem' . $locationId,
-            3600,
+            300,
             function () use ($locationId) {
 
-                $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET'])->get();
+                $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET', 'INCOME'])->get();
 
                 $bundles = DB::table('bundles AS b')
                     ->select('b.id', 'b.title', 'b.rate')

@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
-    public static function createProduct(string $title, float $rate, int $location_id = 0, int $quantity = 0)
+    public static function createProduct(string $title, $rate, int $location_id = 0, $quantity = 0)
     {
         DB::beginTransaction();
 
@@ -53,6 +53,10 @@ class ProductService
 
     public static function addProduct($product_id, $location_id, $quantity)
     {
+        if(is_null($location_id)) {
+            return;
+        }
+        
         $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
         try {
             if (empty($location_info)) {
@@ -73,13 +77,18 @@ class ProductService
 
     public static function consumeProduct(
         int $product_id,
-        int $location_id,
-        int $quantity
+        $location_id,
+        $quantity
     ) {
+
+        if(is_null($location_id)) {
+            return;
+        }
         try {
             $location_info = StockLocationInfo::where('location_id', $location_id)
                 ->where('product_id', $product_id)
                 ->first();
+            if(empty($location_info)) { return; }
             $location_info->quantity -= $quantity;
             $location_info->save();
         } catch (\Exception $e) {
@@ -89,7 +98,6 @@ class ProductService
 
     public static function getProductsFromLocation(int $location_id)
     {
-
         $product = Product::whereIn('id', function ($query) use ($location_id) {
             $query->select('product_id')
                 ->from('stock_location_info')

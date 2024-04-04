@@ -3,11 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Voucher extends Model {
-
-    use SoftDeletes;
+class Voucher extends Model
+{
     protected $table = 'vouchers';
     /**
      * The attributes that are mass assignable.
@@ -15,10 +13,10 @@ class Voucher extends Model {
      * @var array
      */
     protected $fillable = [
-        'cr', 
-        'dr', 
-        'narration', 
-        'amount', 
+        'cr',
+        'dr',
+        'narration',
+        'amount',
         'user_id',
         'immutable',
     ];
@@ -33,19 +31,23 @@ class Voucher extends Model {
         'amount' => 'double',
     ];
 
-    public function creditor() {
+    public function creditor()
+    {
         return $this->belongsTo(Ledger::class, 'cr', 'id');
     }
 
-    public function debtor() {
+    public function debtor()
+    {
         return $this->belongsTo(Ledger::class, 'dr', 'id');
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function invoicePaymentInfo() {
+    public function invoicePaymentInfo()
+    {
         return $this->belongsTo(InvoicePaymentInfo::class);
     }
 }
