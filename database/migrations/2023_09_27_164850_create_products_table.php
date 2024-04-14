@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title')->unique();
             $table->double('rate');
+            $table->date('expiry_date');
             $table->timestamps();
         });
     }

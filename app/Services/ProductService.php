@@ -11,14 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
-    public static function createProduct(string $title, $rate, int $location_id = 0, $quantity = 0)
+    public static function createProduct(string $title, $rate, string $expiry_date, int $location_id = 0, $quantity = 0)
     {
         DB::beginTransaction();
 
         try {
             $product = Product::create([
                 'title' => $title,
-                'rate' => $rate
+                'rate' => $rate,
+                'expiry_date' => $expiry_date
             ]);
 
             if ($location_id == 0) {
@@ -51,12 +52,12 @@ class ProductService
         }
     }
 
-    public static function addProduct($product_id, $location_id, $quantity)
+    public static function addProduct(int $product_id, int $location_id, float $quantity)
     {
-        if(is_null($location_id)) {
-            return;
+        if (is_null($location_id)) {
+            throw new \Exception('Add Product Location Id is null');
         }
-        
+
         $location_info = StockLocationInfo::where('location_id', $location_id)->where('product_id', $product_id)->first();
         try {
             if (empty($location_info)) {
@@ -77,18 +78,20 @@ class ProductService
 
     public static function consumeProduct(
         int $product_id,
-        $location_id,
-        $quantity
+        int $location_id,
+        float $quantity
     ) {
 
-        if(is_null($location_id)) {
-            return;
+        if (is_null($location_id)) {
+            throw new \Exception('Consume Product Location is Null');
         }
         try {
             $location_info = StockLocationInfo::where('location_id', $location_id)
                 ->where('product_id', $product_id)
                 ->first();
-            if(empty($location_info)) { return; }
+            if (empty($location_info)) {
+                return;
+            }
             $location_info->quantity -= $quantity;
             $location_info->save();
         } catch (\Exception $e) {
@@ -103,7 +106,7 @@ class ProductService
                 ->from('stock_location_info')
                 ->where('location_id', $location_id);
         })
-        ->get();
+            ->get();
 
         return $product;
     }
