@@ -14,8 +14,7 @@ return new class extends Migration
         Schema::create('invoices_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('invoice_id');
-            $table->unsignedBigInteger('item_id');
-            $table->enum('item_type', ['PRODUCT', 'LEDGER', 'BUNDLE']);
+            $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('user_id');
             $table->double('quantity');
             $table->double('rate');
@@ -24,6 +23,7 @@ return new class extends Migration
 
             $table->foreign('invoice_id')->references('id')->on('invoices');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('product_id')->references('id')->on('products');
         });
     }
 
