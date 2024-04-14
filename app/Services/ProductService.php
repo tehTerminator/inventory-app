@@ -14,7 +14,6 @@ class ProductService
     public static function createProduct(string $title, $rate, string $expiry_date, int $location_id = 0, $quantity = 0)
     {
         DB::beginTransaction();
-
         try {
             $product = Product::create([
                 'title' => $title,

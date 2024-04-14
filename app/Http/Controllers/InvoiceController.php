@@ -14,19 +14,24 @@ class InvoiceController extends Controller
      *
      * @return void
      */
-    public function __construct(){ }
-
-    public function select(Request $request) {
-       $data = InvoiceService::select($request);
-       return response()->json($data);
+    public function __construct()
+    {
     }
 
-    public function getById($id) {
+    public function select(Request $request)
+    {
+        $data = InvoiceService::select($request);
+        return response()->json($data);
+    }
+
+    public function getById($id)
+    {
         $data = InvoiceService::getInvoiceById($id);
         return response()->json($data);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
 
         $this->validate($request, [
@@ -38,25 +43,25 @@ class InvoiceController extends Controller
         ]);
 
         $this->validate($request, [
-            'invoice.transactions.*.item_id' => 'required|integer|min:1',
-            'invoice.transactions.*.item_type' => 'string|in:PRODUCT,LEDGER,BUNDLE',
+            'invoice.transactions.*.product_id' => 'required|exists:products,id',
             'invoice.transactions.*.quantity' => 'required|decimal:0,2|min:1',
             'invoice.transactions.*.rate' => 'required|decimal:0,2|min:1',
         ]);
 
         $this->validate($request, [
-            'vouchers.*.cr' => 'required|integer|min:1|exists:ledgers,id',
-            'vouchers.*.dr' => 'required|integer|min:1|exists:ledgers,id',
+            'vouchers.*.cr' => 'required|exists:ledgers,id',
+            'vouchers.*.dr' => 'required|exists:ledgers,id',
             'vouchers.*.amount' => 'required|decimal:0,2|min:1',
         ]);
-        
+
         $user_id = Auth::user()->id;
-        
+
         $response = InvoiceService::createNewInvoice($request, $user_id);
         return response()->json($response);
     }
 
-    public function delete(int $id) {
+    public function delete(int $id)
+    {
         $response = InvoiceService::delete($id);
         // return response()->json(['message' => 'Invoice #' . $id . ' Deleted Successfully']);
         return response()->json($response);

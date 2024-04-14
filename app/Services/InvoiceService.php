@@ -171,9 +171,6 @@ class InvoiceService
     private static function storeTransaction(
         array $transaction,
         Invoice $invoice,
-        int $dr_ledger,
-        $is_child = false,
-        $narration = NULL
     ) {
         $t = InvoiceTransaction::create([
             'quantity' => $transaction['quantity'],
@@ -207,7 +204,7 @@ class InvoiceService
         $response = [];
 
         $info = StockTransferInfo::create([
-            'product_id' => $transaction->item_id,
+            'product_id' => $transaction->product_id,
             'from_location_id' => $fromLocation,
             'to_location_id' => $toLocation,
             'narration' => $narration,
