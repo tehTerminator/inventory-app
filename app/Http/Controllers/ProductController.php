@@ -22,9 +22,8 @@ class ProductController extends Controller
         $this->validate($request, [
             'title' => 'required|unique:products,title',
             'quantity' => 'decimal:0,2',
-            'rate' => 'decimal:0,2|min:1',
+            'rate' => 'decimal:0,2|min:0.01',
             'expiry_date' => 'required',
-            'location_id' => 'numeric|exists:locations,id'
         ]);
 
         try {

@@ -44,8 +44,8 @@ class InvoiceController extends Controller
 
         $this->validate($request, [
             'invoice.transactions.*.product_id' => 'required|exists:products,id',
-            'invoice.transactions.*.quantity' => 'required|decimal:0,2|min:1',
-            'invoice.transactions.*.rate' => 'required|decimal:0,2|min:1',
+            'invoice.transactions.*.quantity' => 'required|decimal:0,2|min:0.01',
+            'invoice.transactions.*.rate' => 'required|decimal:0,2|min:0.01',
         ]);
 
         $this->validate($request, [
