@@ -17,5 +17,4 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-
-$router->get('/user/auth', ['uses' => 'UsersController@authenticate']);
+$router->get('/get/authenticated', ['uses' => 'UsersController@authenticate']);
