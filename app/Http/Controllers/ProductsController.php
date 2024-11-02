@@ -45,4 +45,14 @@ class ProductsController extends Controller
         }
         return response()->json(['message' => 'Failed to Update Product'], 500);
     }
+
+    public function delete(Request $request) {
+        $this->validate($request, ['id' => 'required|exists:products,id']);
+        
+        $product = Product::findOrFail($request->id);
+        if ($product->delete()) {
+            return response()->json(['message' => 'Product ' . $product->title . ' Deleted Successfully']);
+        }
+        return response()->json(['message' => 'Unable to Delete Product ' . $product->title], 500);
+    }
 }
