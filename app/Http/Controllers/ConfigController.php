@@ -39,11 +39,7 @@ class ConfigController extends Controller
             return [$key => 'No Data Stored'];
         }
     }
-
-    private static function storeKey($key) {
-        $data = 
-    }
-
+    
     public function createDefaultConfigFile() {
         $file_path = storage_path(self::$path_of_config_file);
         $jsonData = json_encode(self::$default_data, JSON_PRETTY_PRINT);
