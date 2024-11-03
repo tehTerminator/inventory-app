@@ -38,11 +38,11 @@ class OrderController extends Controller {
     public function updateStatus(Request $request) {
         $this->validate($request, [
             'id' => ['required', 'numeric', 'exists:orders,id'],
-            'status' => ['required', 'in:ACCEPT,COMPLETE,PAID,CANCEL']
+            'status' => ['required', 'in:ACCEPTED,COMPLETE,PAID,CANCELLED']
         ]); 
         $order = Order::findOrFail($request->id);
         switch ($request->status) {
-            case 'ACCEPT':
+            case 'ACCEPTED':
                 $order = $order->accept();
                 break;
             case 'COMPLETE':
@@ -51,7 +51,7 @@ class OrderController extends Controller {
             case 'PAID':
                 $order = $order->paid();
                 break;
-            case 'CANCEL':
+            case 'CANCELLED':
                 $order = $order->cancel();
             default:
                 return response()->json(['message' => 'Unspecified Status Provided']);
