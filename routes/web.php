@@ -24,6 +24,8 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('locations', ['uses' => 'LocationController@fetch']);
     $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
     $router->get('orders/completed', ['uses' => 'OrderController@fetchCompleted']);
+    $router->get('customers', ['uses' => 'CustomerController@fetch']);
+    $router->get('customer/{mobile:[0-9]{10}}', ['uses' => 'CustomerController@find']);
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
@@ -31,11 +33,13 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($
     $router->post('locations', ['uses' => 'LocationController@create']);
     $router->post('product/image', ['uses' => 'ProductController@uploadImage']);
     $router->post('order', ['uses' => 'OrderController@create']);
+    $router->post('customer', ['uses' => 'CustomerController@create']);
 });
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
-    $router->put('products', ['uses' => 'ProductController@update']);
-    $router->put('locations', ['uses' => 'LocationController@update']);
+    $router->put('product', ['uses' => 'ProductController@update']);
+    $router->put('location', ['uses' => 'LocationController@update']);
+    $router->put('customer', ['uses' => 'CustomerController@update']);
     $router->put('order/update/status', ['uses' => 'OrderController@updateStatus']);
 });
 
