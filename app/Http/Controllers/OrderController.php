@@ -41,24 +41,25 @@ class OrderController extends Controller {
             'status' => ['required', 'in:ACCEPTED,COMPLETE,PAID,CANCELLED']
         ]); 
         $order = Order::findOrFail($request->id);
+        $statusChanged = false;
         switch ($request->status) {
             case 'ACCEPTED':
-                $order = $order->accept();
+                $statusChanged = $order->accept();
                 break;
             case 'COMPLETE':
-                $order = $order->complete();
+                $statusChanged = $order->complete();
                 break;
             case 'PAID':
-                $order = $order->paid();
+                $statusChanged = $order->paid();
                 break;
             case 'CANCELLED':
-                $order = $order->cancel();
+                $statusChanged = $order->cancel();
             default:
                 return response()->json(['message' => 'Unspecified Status Provided']);
                 break;
         }
 
-        if ($order) {
+        if ($statusChanged) {
             return response()->json($order);
         }
         return response()->json(['message' => 'Failed to Change Order Status']);
