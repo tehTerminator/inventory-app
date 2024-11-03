@@ -27,6 +27,7 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
     $router->post('products', ['uses' => 'ProductController@create']);
     $router->post('locations', ['uses' => 'LocationController@create']);
+    $router->post('product/image', ['uses' => 'ProductController@uploadImage']);
 });
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
