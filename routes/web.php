@@ -22,17 +22,21 @@ $router->get('/get/authenticated', ['uses' => 'UsersController@authenticate']);
 $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($router) {
     $router->get('products', ['uses' => 'ProductController@fetch']);
     $router->get('locations', ['uses' => 'LocationController@fetch']);
+    $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
+    $router->get('orders/completed', ['uses' => 'OrderController@fetchCompleted']);
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
     $router->post('products', ['uses' => 'ProductController@create']);
     $router->post('locations', ['uses' => 'LocationController@create']);
     $router->post('product/image', ['uses' => 'ProductController@uploadImage']);
+    $router->post('order', ['uses' => 'OrderController@create']);
 });
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
     $router->put('products', ['uses' => 'ProductController@update']);
     $router->put('locations', ['uses' => 'LocationController@update']);
+    $router->put('order/update/status', ['uses' => 'OrderController@updateStatus']);
 });
 
 $router->group(['prefix' => 'delete', 'middleware' => 'auth'], function() use ($router) {
