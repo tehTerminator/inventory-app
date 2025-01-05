@@ -44,7 +44,7 @@ class Order extends Model {
             return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] );
         }
 
-        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] )->andWhere( 'location_id', $location_id );
+        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] )->where( 'location_id', $location_id );
     }
 
     /**
@@ -104,9 +104,10 @@ class Order extends Model {
     * @return order Returns the updated Order if success
     */
 
-    public function paid() {
+    public function paid(int $invoice_id) {
         if ( $this->status == 'COMPLETED' ) {
             $this->status == 'PAID';
+            $this->invoice_id = $invoice_id;
             return $this->save();
         }
         return false;
