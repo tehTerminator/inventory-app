@@ -8,19 +8,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Order extends Model {
     use SoftDeletes;
 
-    protected $fillable = [ 'location_id', 'product_id', 'quantity', 'rate' ];
+    protected $fillable = [ 'location_id', 'product_id', 'quantity', 'rate', 'comments' ];
+
     protected $dates = [ 'deleted_at' ];
 
     protected $casts = [
         'quantity' => 'integer',
         'rate' => 'integer'
     ];
-
-    protected static function booted() {
-        static::addGlobalScope( 'withProduct', function ( $query ) {
-            $query->with( 'product' );
-        });
-    }
 
     public function product() {
         return $this->hasOne( Product::class );
@@ -34,17 +29,25 @@ class Order extends Model {
         return $this->belongsTo( Invoice::class );
     }
 
+    public function scopeCurrentOrders( $query, int $location_id = 0 ) {
+        if ( $location_id > 0 ) {
+            $query->where( 'location_id', $location_id );
+        }
+
+        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED', 'COMPLETED' ] );
+    }
+
     /**
     * Returns Open Order
     * if Location Id is provided Open orders for Location
     */
 
     public function scopeOpen( $query, int $location_id = 0 ) {
-        if ( $location_id == 0 ) {
-            return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] );
+        if ( $location_id > 0 ) {
+            $query->where( 'location_id', $location_id );
         }
 
-        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] )->where( 'location_id', $location_id );
+        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] );
     }
 
     /**
@@ -53,7 +56,7 @@ class Order extends Model {
 
     public function scopeCompleted( $query, int $location_id = 0 ) {
         if ( $location_id > 0 ) {
-            return $query->where( 'location_id', $location_id )->andWhere( 'status', 'COMPLETED' );
+            $query->where( 'location_id', $location_id );
         }
         return $query->where( 'status', 'COMPLETED' );
     }
@@ -104,7 +107,7 @@ class Order extends Model {
     * @return order Returns the updated Order if success
     */
 
-    public function paid(int $invoice_id) {
+    public function paid( int $invoice_id ) {
         if ( $this->status == 'COMPLETED' ) {
             $this->status == 'PAID';
             $this->invoice_id = $invoice_id;

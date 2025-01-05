@@ -24,6 +24,7 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('product', ['uses' => 'ProductsController@fetchOne']);
     $router->get('locations', ['uses' => 'LocationsController@fetchAll']);
     $router->get('location', ['uses' => 'LocationsController@fetchOne']);
+    $router->get('location/orderSummary', ['uses' => 'OrderController@getOrderSummary']);
     $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
     $router->get('orders/completed', ['uses' => 'OrderController@fetchCompleted']);
     $router->get('customers', ['uses' => 'CustomerController@fetch']);
@@ -34,7 +35,7 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($
     $router->post('product', ['uses' => 'ProductsController@create']);
     $router->post('location', ['uses' => 'LocationsController@create']);
     $router->post('product/image', ['uses' => 'ProductsController@uploadImage']);
-    $router->post('order', ['uses' => 'OrderController@create']);
+    $router->post('orders', ['uses' => 'OrderController@create']);
     $router->post('customer', ['uses' => 'CustomerController@create']);
 });
 
