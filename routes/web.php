@@ -41,12 +41,12 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
     $router->put('product', ['uses' => 'ProductsController@update']);
-    $router->put('location', ['uses' => 'LocationController@update']);
+    $router->put('location', ['uses' => 'LocationsController@update']);
     $router->put('customer', ['uses' => 'CustomerController@update']);
     $router->put('order/update/status', ['uses' => 'OrderController@updateStatus']);
 });
 
 $router->group(['prefix' => 'delete', 'middleware' => 'auth'], function() use ($router) {
-    $router->delete('products', ['uses' => 'ProductsController@delete']);
-    $router->delete('locations', ['uses' => 'LocationController@delete']);
+    $router->delete('product', ['uses' => 'ProductsController@delete']);
+    $router->delete('location', ['uses' => 'LocationsController@delete']);
 });
