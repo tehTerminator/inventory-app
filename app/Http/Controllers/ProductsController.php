@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
  {
@@ -15,8 +16,14 @@ class ProductsController extends Controller
         return response()->json( Product::all() );
     }
 
-    public function create( Request $request )
- {
+    public function fetchOne( Request $request ) {
+        $this->validate( $request, [
+            'id' => [ 'required', 'numeric', 'min:1', 'exists:products,id' ]
+        ] );
+        return response()->json( Product::find( $request->id ) );
+    }
+
+    public function create( Request $request ) {
         $this->validate( $request, [
             'title' => [ 'required', 'unique:products,title', 'string' ],
             'rate' => [ 'required', 'numeric', 'min:1' ],
@@ -32,8 +39,7 @@ class ProductsController extends Controller
         return response()->json( [ 'message' => 'Failed to Store New Product' ], 500 );
     }
 
-    public function update( Request $request )
- {
+    public function update( Request $request ) {
         $this->validate( $request, [ 'id' => [ 'required', 'numeric', 'exists:products,id' ], 'title' => [ 'required', 'string', 'unique:products,title,' . $request->id ], 'rate' => [ 'required', 'numeric', 'min:1' ], 'image_url' => [ 'nullable', 'string' ] ] );
         $product = Product::findOrFail( $request->id );
         $product->title = $request->title;
@@ -58,16 +64,17 @@ class ProductsController extends Controller
     }
 
     public function uploadImage( Request $request ) {
-        // Validate the incoming request 
+        // Validate the incoming request
         $this->validate( $request, [ 'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', ] );
-        // Get the uploaded file 
+        // Get the uploaded file
         $file = $request->file( 'image' );
-        // Generate a random filename 
+        // Generate a random filename
         $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-        // Store the file in the 'public/images' directory 
+        // Store the file in the 'public/images' directory
         $path = $file->storeAs( 'public/images', $filename );
-        // Get the URL of the uploaded image 
+        // Get the URL of the uploaded image
         $url = Storage::url( $path );
-        // Return the URL return 
+        // Return the URL return
         response()->json( [ 'url' => $url ] );
     }
+}
