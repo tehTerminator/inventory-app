@@ -28,7 +28,8 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
     $router->get('orders/completed', ['uses' => 'OrderController@fetchCompleted']);
     $router->get('customers', ['uses' => 'CustomerController@fetch']);
-    $router->get('customer/{mobile:[0-9]{10}}', ['uses' => 'CustomerController@find']);
+    $router->get('customer/{mobile:[6-9]\\d{9}}', ['uses' => 'CustomerController@find']);
+    $router->get('report/day-view', ['uses' => 'OrderController@dayReport']);
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
@@ -37,6 +38,7 @@ $router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($
     $router->post('product/image', ['uses' => 'ProductsController@uploadImage']);
     $router->post('orders', ['uses' => 'OrderController@create']);
     $router->post('customer', ['uses' => 'CustomerController@create']);
+    $router->post('invoice', ['uses' => 'InvoiceController@create']);   
 });
 
 $router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {

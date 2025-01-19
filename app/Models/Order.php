@@ -18,7 +18,7 @@ class Order extends Model {
     ];
 
     public function product() {
-        return $this->hasOne( Product::class );
+        return $this->belongsTo( Product::class );
     }
 
     public function location() {
@@ -34,7 +34,7 @@ class Order extends Model {
             $query->where( 'location_id', $location_id );
         }
 
-        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED', 'COMPLETED' ] );
+        return $query->with( 'product' )->whereIn( 'status', [ 'OPEN', 'ACCEPTED', 'COMPLETED' ] );
     }
 
     /**
@@ -47,7 +47,7 @@ class Order extends Model {
             $query->where( 'location_id', $location_id );
         }
 
-        return $query->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] );
+        return $query->with( 'product' )->whereIn( 'status', [ 'OPEN', 'ACCEPTED' ] );
     }
 
     /**
@@ -58,7 +58,7 @@ class Order extends Model {
         if ( $location_id > 0 ) {
             $query->where( 'location_id', $location_id );
         }
-        return $query->where( 'status', 'COMPLETED' );
+        return $query->with( 'product' )->where( 'status', 'COMPLETED' );
     }
 
     /***
@@ -66,7 +66,7 @@ class Order extends Model {
     */
 
     public function accept() {
-        if ( $this->status === 'OPEN' ) {
+        if ( $this->status == 'OPEN' ) {
             $this->status = 'ACCEPTED';
             return $this->save();
         }
@@ -94,8 +94,8 @@ class Order extends Model {
     */
 
     public function complete() {
-        if ( $this->status === 'OPEN' || $this->status == 'ACCEPTED' ) {
-            $this->status == 'COMPLETED';
+        if ( $this->status == 'OPEN' || $this->status == 'ACCEPTED' ) {
+            $this->status = 'COMPLETED';
             return $this->save();
         }
         return false;
@@ -109,7 +109,7 @@ class Order extends Model {
 
     public function paid( int $invoice_id ) {
         if ( $this->status == 'COMPLETED' ) {
-            $this->status == 'PAID';
+            $this->status = 'PAID';
             $this->invoice_id = $invoice_id;
             return $this->save();
         }

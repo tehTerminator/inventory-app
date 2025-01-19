@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Invoice extends Model {
-    protected $fillable = [ 'customer_id', 'amount', 'discount' ];
+    protected $fillable = [ 'customer_id', 'amount', 'discount', 'payment_method' ];
     protected $casts = [
         'amount' => 'integer',
         'discount' => 'integer'
@@ -16,7 +16,7 @@ class Invoice extends Model {
     }
 
     public function orders() {
-        return $this->hasMany(Order::class)->where('status', 'COMPLETED')->orWhere('status', 'PAID');
+        return $this->hasMany( Order::class )->where( 'status', 'COMPLETED' )->orWhere( 'status', 'PAID' );
     }
 
     public function getNetAmountAttribute() {

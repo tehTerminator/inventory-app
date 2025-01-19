@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Invoice;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,12 +13,12 @@ class OrderController extends Controller {
 
     public function fetchOpen( Request $request ) {
         $location_id = $request->input( 'location_id', 0 );
-        return response()->json( Order::open( $location_id )->get() );
+        return response()->json( Order::open( $location_id )->with( [ 'product', 'location' ] )->get() );
     }
 
     public function fetchCompleted( Request $request ) {
         $location_id = $request->input( 'location_id', 0 );
-        return response()->json( Order::completed( $location_id )->get() );
+        return response()->json( Order::completed( $location_id )->with( [ 'product', 'location' ] )->get() );
     }
 
     public function getOrderSummary( Request $request ) {
@@ -77,7 +78,7 @@ class OrderController extends Controller {
                 'status' => [ 'required', 'in:ACCEPTED,COMPLETE,PAID,CANCELLED' ]
             ] );
 
-            $order = Order::findOrFail( $request->id );
+            $order = Order::with( [ 'product', 'location' ] )->findOrFail( $request->id );
             $statusChanged = false;
             switch ( $request->status ) {
                 case 'ACCEPTED':
@@ -91,6 +92,7 @@ class OrderController extends Controller {
                 break;
                 case 'CANCELLED':
                 $statusChanged = $order->cancel();
+                break;
                 default:
                 return response()->json( [ 'message' => 'Unspecified Status Provided' ] );
                 break;
@@ -100,6 +102,26 @@ class OrderController extends Controller {
                 return response()->json( $order );
             }
             return response()->json( [ 'message' => 'Failed to Change Order Status' ] );
+        }
+
+        public function dayReport( Request $request ) {
+            $this->validate( $request, [
+                'date' => 'required|date'
+            ] );
+
+            $date = $request->input( 'date' );
+            $orders = Order::whereDate( 'created_at', $date )->with( 'product' );
+            $payment = Invoice::selectRaw( 'SUM(amount) as totalAmount, payment_method' )
+            ->whereDate( 'created_at', $date )
+            ->groupBy( 'payment_method' )
+            ->get();
+            $result = [
+                'totalOrders' => $orders->count(),
+                'cancelledOrders'=> $orders->where( 'status', 'CANCELLED' )->count(),
+                'orders' => Order::selectRaw( 'SUM(quantity * rate) as totalAmount, product_id, SUM(quantity) as quantity' )->where( 'status', 'PAID' ) ->with( 'product' )->whereDate( 'created_at', $date ) ->groupBy( 'product_id' ) ->get(),
+                'payment' => $payment
+            ];
+            return response()->json( $result );
         }
     }
 
