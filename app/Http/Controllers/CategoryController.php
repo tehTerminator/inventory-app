@@ -7,13 +7,20 @@ use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function fetch()
     {
         return response()->json(Category::all());
+    }
+
+    public function fetchOne(Request $request)
+    {
+        $this->validate($request, [
+            'id' => 'required|numeric|exists:categories,id'
+        ]);
+        $category = Category::findOrFail($request->id);
+        return response()->json($category);
     }
 
     public function create(Request $request)
