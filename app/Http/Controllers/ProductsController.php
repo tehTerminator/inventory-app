@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function fetch()
     {
@@ -31,10 +29,11 @@ class ProductsController extends Controller
         $this->validate($request, [
             'title' => ['required', 'unique:products,title', 'string'],
             'rate' => ['required', 'numeric', 'min:1'],
+            'category_id' => ['numeric'],
             'image_url' => 'string'
         ]);
 
-        $product = Product::create($request->only(['title', 'rate', 'image_url']));
+        $product = Product::create($request->only(['title', 'rate', 'category_id', 'image_url']));
 
         if ($product) {
             return response()->json($product);
@@ -45,10 +44,11 @@ class ProductsController extends Controller
 
     public function update(Request $request)
     {
-        $this->validate($request, ['id' => ['required', 'numeric', 'exists:products,id'], 'title' => ['required', 'string', 'unique:products,title,' . $request->id], 'rate' => ['required', 'numeric', 'min:1'], 'image_url' => ['nullable', 'string']]);
+        $this->validate($request, ['id' => ['required', 'numeric', 'exists:products,id'], 'title' => ['required', 'string', 'unique:products,title,' . $request->id], 'rate' => ['required', 'numeric', 'min:1'], 'image_url' => ['nullable', 'string'], 'category_id' => ['required', 'exists:categories,id']]);
         $product = Product::findOrFail($request->id);
         $product->title = $request->title;
         $product->rate = $request->rate;
+        $product->category_id = $request->category_id;
         $product->image_url = $request->input('image_url', $product->image_url);
         $result = $product->save();
 
