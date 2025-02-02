@@ -30,25 +30,26 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('customers', ['uses' => 'CustomerController@fetch']);
     $router->get('customer/{mobile:[6-9]\\d{9}}', ['uses' => 'CustomerController@find']);
     $router->get('report/day-view', ['uses' => 'OrderController@dayReport']);
+    $router->get('categories', ['uses' => 'CategoryController@fetch']);
 });
 
-$router->group(['prefix' => 'create', 'middleware' => 'auth'], function() use ($router) {
+$router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
     $router->post('product', ['uses' => 'ProductsController@create']);
     $router->post('location', ['uses' => 'LocationsController@create']);
     $router->post('product/image', ['uses' => 'ProductsController@uploadImage']);
     $router->post('orders', ['uses' => 'OrderController@create']);
     $router->post('customer', ['uses' => 'CustomerController@create']);
-    $router->post('invoice', ['uses' => 'InvoiceController@create']);   
+    $router->post('invoice', ['uses' => 'InvoiceController@create']);
 });
 
-$router->group(['prefix' => 'update', 'middleware' => 'auth'], function() use ($router) {
+$router->group(['prefix' => 'update', 'middleware' => 'auth'], function () use ($router) {
     $router->put('product', ['uses' => 'ProductsController@update']);
     $router->put('location', ['uses' => 'LocationsController@update']);
     $router->put('customer', ['uses' => 'CustomerController@update']);
     $router->put('order/update/status', ['uses' => 'OrderController@updateStatus']);
 });
 
-$router->group(['prefix' => 'delete', 'middleware' => 'auth'], function() use ($router) {
+$router->group(['prefix' => 'delete', 'middleware' => 'auth'], function () use ($router) {
     $router->delete('product', ['uses' => 'ProductsController@delete']);
     $router->delete('location', ['uses' => 'LocationsController@delete']);
 });
