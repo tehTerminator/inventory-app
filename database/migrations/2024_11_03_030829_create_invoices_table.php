@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('customer_id');
             $table->integer('amount');
             $table->integer('discount');
-            $table->enum('payment_method', ['CASH', 'UPI', 'UNPAID'])->default('CASH');
+            $table->enum('payment_method', ['CASH', 'UPI', 'ZOMATO', 'UNPAID'])->default('CASH');
             $table->timestamps();
 
             $table->foreign('customer_id')->references('id')->on('customers');

@@ -21,6 +21,15 @@ class OrderController extends Controller {
         return response()->json( Order::completed( $location_id )->with( [ 'product', 'location' ] )->get() );
     }
 
+    public function fetchAllForDay( Request $request ) {
+        $this->validate( $request, [
+            'date' => [ 'required' ]
+        ] );
+
+        $order = Order::whereDate( 'created_at', $request->date )->with( 'product' )->get();
+        return response()->json( $order );
+    }
+
     public function getOrderSummary( Request $request ) {
         $this->validate( $request, [
             'location_id' => 'required|exists:locations,id'

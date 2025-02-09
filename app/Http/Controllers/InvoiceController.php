@@ -15,8 +15,23 @@ class InvoiceController extends Controller {
         $this->validate( $request, [ 'date' => 'required|date' ] );
         // Assuming the 'date' field corresponds to the 'created_at' timestamp
         $date = $request->date;
-        $invoices = Invoice::whereDate( 'created_at', $date )->get();
+        $invoices = Invoice::whereDate( 'created_at', $date )->with( 'customer' )->get();
         return response()->json( $invoices );
+    }
+
+    public function fetchOne( Request $request ) 
+ {
+        $this->validate( $request, [ 'id' => 'required|exists:invoices,id' ] );
+        $id = $request->id;
+        $invoice = Invoice::with( 'customer' )->find( $id );
+        $orders = Order::where( 'invoice_id', $id )->with( 'product' )->get();
+
+        $result = [
+            'invoice' => $invoice,
+            'orders' => $orders
+        ];
+
+        return response()->json( $result );
     }
 
     public function create( Request $request ) {
@@ -25,7 +40,7 @@ class InvoiceController extends Controller {
             'customer_id' => 'required|exists:customers,id',
             'discount' => 'integer',
             'amount' => 'required|integer',
-            'payment_method' => 'required|in:CASH,UPI,UNPAID'
+            'payment_method' => 'required|in:CASH,UPI,ZOMATO,UNPAID'
         ] );
 
         DB::beginTransaction();

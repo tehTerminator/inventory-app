@@ -25,6 +25,8 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('locations', ['uses' => 'LocationsController@fetchAll']);
     $router->get('location', ['uses' => 'LocationsController@fetchOne']);
     $router->get('location/orderSummary', ['uses' => 'OrderController@getOrderSummary']);
+    $router->get('orders', ['uses' => 'OrderController@fetchAllForDay']);
+    $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
     $router->get('orders/open', ['uses' => 'OrderController@fetchOpen']);
     $router->get('orders/completed', ['uses' => 'OrderController@fetchCompleted']);
     $router->get('customers', ['uses' => 'CustomerController@fetch']);
@@ -32,6 +34,8 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('report/day-view', ['uses' => 'OrderController@dayReport']);
     $router->get('categories', ['uses' => 'CategoryController@fetch']);
     $router->get('category', ['uses' => 'CategoryController@fetchOne']);
+    $router->get('invoices', ['uses' => 'InvoiceController@fetchByDate']);
+    $router->get('invoice', ['uses' => 'InvoiceController@fetchOne']);
 });
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
