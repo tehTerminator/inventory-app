@@ -62,7 +62,7 @@ class GeneralController extends Controller
         try {
             $query = $this->validateAndGetQuery($table);
         } catch (Exception $e) {
-            return response(['message' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], 400);
         }
 
         // Apply options if provided
@@ -99,48 +99,54 @@ class GeneralController extends Controller
             300,
             function () use ($locationId) {
 
-                $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET', 'INCOME'])->get();
+                try{
 
-                $bundles = DB::table('bundles AS b')
-                    ->select('b.id', 'b.title', 'b.rate')
-                    ->leftJoin('bundles__templates AS bt', 'b.id', '=', 'bt.bundle_id')
-                    ->leftJoin('stock_location_infos AS st', 'bt.kind', '=', 'st.product_id')
-                    ->where(function ($query) use ($locationId) {
-                        $query->where('bt.kind', '=', 'LEDGER')
-                            ->orWhere(function ($query) use ($locationId) {
-                                $query->where('bt.kind', '=', 'PRODUCT')
-                                    ->whereNull('st.product_id')
-                                    ->orWhere('st.location_id', '=', $locationId);
-                            });
-                    })
-                    ->distinct()
-                    ->get();
-
-                $products = DB::table('stock_location_infos')
-                    ->join('products', 'stock_location_infos.product_id', '=', 'products.id')
-                    ->where('stock_location_infos.location_id', $locationId)
-                    ->get();
-
-
-                $items = [];
-
-                foreach ($products as $item) {
-                    $item->type = 'PRODUCT';
-                    array_push($items, $item);
+                    $ledgers = Ledger::select('id', 'title')->whereIn('kind', ['BANK', 'CASH', 'WALLET', 'INCOME'])->get();
+    
+                    $bundles = DB::table('bundles AS b')
+                        ->select('b.id', 'b.title', 'b.rate')
+                        ->leftJoin('bundles__templates AS bt', 'b.id', '=', 'bt.bundle_id')
+                        ->leftJoin('stock_location_infos AS st', 'bt.kind', '=', 'st.product_id')
+                        ->where(function ($query) use ($locationId) {
+                            $query->where('bt.kind', '=', 'LEDGER')
+                                ->orWhere(function ($query) use ($locationId) {
+                                    $query->where('bt.kind', '=', 'PRODUCT')
+                                        ->whereNull('st.product_id')
+                                        ->orWhere('st.location_id', '=', $locationId);
+                                });
+                        })
+                        ->distinct()
+                        ->get();
+    
+                    $products = DB::table('stock_location_infos')
+                        ->join('products', 'stock_location_infos.product_id', '=', 'products.id')
+                        ->where('stock_location_infos.location_id', $locationId)
+                        ->get();
+    
+    
+                    $items = [];
+    
+                    foreach ($products as $item) {
+                        $item->type = 'PRODUCT';
+                        array_push($items, $item);
+                    }
+    
+                    foreach ($ledgers as $item) {
+                        $item->type = 'LEDGER';
+                        $item['rate'] = 0;
+                        array_push($items, $item);
+                    }
+    
+                    foreach ($bundles as $item) {
+                        $item->type = 'BUNDLE';
+                        array_push($items, $item);
+                    }
+    
+                    return $items;
+                } catch (Exception $ex) {
+                    return response()->json(['message' => $ex->getMessage()], 500);
                 }
 
-                foreach ($ledgers as $item) {
-                    $item->type = 'LEDGER';
-                    $item['rate'] = 0;
-                    array_push($items, $item);
-                }
-
-                foreach ($bundles as $item) {
-                    $item->type = 'BUNDLE';
-                    array_push($items, $item);
-                }
-
-                return $items;
             }
         );
 
