@@ -34,6 +34,11 @@ class VoucherController extends Controller
         return response()->json($response);
     }
 
+    public function getRecent(Request $request) {
+        $vouchers = Voucher::orderBy('id', 'desc')->take(5)->get();
+        return response()->json($vouchers);
+    }
+
     public function getById(int $id)
     {
         // return response($id);
