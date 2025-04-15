@@ -11,8 +11,7 @@ class Product extends Model
 
     protected $fillable = [
         'title',
-        'rate',
-        'expiry_date',
+        'rate'
     ];
 
     protected $hidden = [

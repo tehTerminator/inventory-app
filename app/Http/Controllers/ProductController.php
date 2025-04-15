@@ -12,8 +12,7 @@ use Illuminate\Support\Facades\Auth;
 class ProductController extends Controller
 {
 
-    public function indexProducts()
-    {
+    public function indexProducts() {
         return response()->json(Product::all());
     }
 
@@ -22,15 +21,14 @@ class ProductController extends Controller
         $this->validate($request, [
             'title' => 'required|unique:products,title',
             'quantity' => 'decimal:0,2',
-            'rate' => 'decimal:0,2|min:0.01',
-            'expiry_date' => 'required',
+            'rate' => 'decimal:0,2|min:1',
+            'location_id' => 'numeric|exists:locations,id'
         ]);
 
         try {
             $product = ProductService::createProduct(
                 $request->input('title'),
                 $request->input('rate'),
-                $request->input('expiry_date'),
                 $request->input('location_id', 0),
                 $request->input('quantity', 0)
             );
@@ -38,11 +36,12 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => 'Unable to Create new Product. ' . $e->getMessage()], 500);
         }
+
+
     }
 
 
-    public function indexProductByLocation(Request $request)
-    {
+    public function indexProductByLocation(Request $request) {
         $this->validate($request, [
             'location' => 'integer'
         ]);
@@ -52,8 +51,7 @@ class ProductController extends Controller
         return response()->json($product);
     }
 
-    public function getProductById($id)
-    {
+    public function getProductById($id) {
         $product = Product::findOrFail($id);
         return response()->json($product);
     }
@@ -82,12 +80,12 @@ class ProductController extends Controller
         $fromLocation = $request->input('myLocation');
         $toLocation = $request->input('toLocation');
         $quantity = $request->input('quantity');
-
+    
         ProductService::addProduct($product_id, $toLocation, $quantity);
         ProductService::consumeProduct($product_id, $fromLocation, $quantity);
 
-
-
+        
+        
         return response()->json($info);
     }
 }

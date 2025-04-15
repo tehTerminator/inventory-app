@@ -11,18 +11,25 @@ use App\Http\Controllers\GeneralController;
 |
 | Here is where you can register all of the routes for an application.
 | It is a breeze. Simply tell Lumen the URIs it should respond to
-http://localhost/inventory-app/| and give it the Closure to call when that URI is requested.
+| and give it the Closure to call when that URI is requested.
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
-
-// $router->get('get/location/user', ['uses' => 'LocationController@indexUsers']);
+// $router->get('/', function () use ($router) {
+//     return $router->app->version();
+// });
 
 
 $router->get('get/user/auth', ['uses' => 'UsersController@authenticate']);
+
+
+$router->group(['prefix' => 'get/report', 'middleware' => 'auth'], function () use ($router) {
+    $router->get('todaysIncome', ['uses' => 'VoucherController@todaysIncome']);
+    $router->get('todaysExpense', ['uses' => 'VoucherController@todaysExpense']);
+    $router->get('mySales', ['uses' => 'OverviewReportController@mySales']);
+    $router->get('myCommission', ['uses' => 'OverviewReportController@myCommission']);
+});
+
 
 $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($router) {
     // $router->group(['prefix' => 'get'], function () use ($router) {
@@ -37,7 +44,6 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('contact', ['uses' => 'ContactController@searchByNumber']);
     $router->get('contacts', ['uses' => 'ContactController@indexContacts']);
 
-
     $router->get('general-items', ['uses' => 'GeneralController@getGeneralItems']);
 
     $router->get('invoice/{id:[0-9]+}', ['uses' => 'InvoiceController@getById']);
@@ -50,20 +56,21 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
     $router->get('location/users', ['uses' => 'LocationController@indexUsers']);
 
     $router->get('products', ['uses' => 'ProductController@indexProducts']);
-
-    $router->get('todaysIncome', ['uses' => 'VoucherController@todaysIncome']);
-    $router->get('todaysExpense', ['uses' => 'VoucherController@todaysExpense']);
+    $router->get('productsUsed', ['uses' => 'OverviewReportController@productsUsed']);
 
     $router->get('users', ['uses' => 'UsersController@index']);
     $router->get('user/locations', ['uses' => 'UsersController@indexLocations']);
 
     $router->get('vouchers', ['uses' => 'VoucherController@select']);
-    $router->get('voucher/recent', ['uses' => 'VoucherController@getRecent']);
+    $router->get('vouchers/recent', ['uses' => 'VoucherController@getRecent']);
     $router->get('voucher/{id:[0-9]+}', ['uses' => 'VoucherController@getById']);
 
     $router->get('{table:[A-Za-z_]+}/{id:[0-9]+}', ['uses' => 'GeneralController@getById']);
     $router->get('{table:[A-Za-z_]+}', ['uses' => 'GeneralController@select']);
 });
+
+
+
 
 $router->group(['prefix' => 'create', 'middleware' => 'auth'], function () use ($router) {
     // $router->group(['prefix' => 'create'], function () use ($router) {

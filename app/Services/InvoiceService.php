@@ -11,6 +11,7 @@ use App\Models\Contact;
 use Illuminate\Support\Facades\DB;
 use App\Models\StockTransferInfo;
 use App\Services\ProductService;
+use App\Models\Bundle;
 use App\Models\InvoicePaymentInfo;
 use Carbon\Carbon;
 
@@ -32,10 +33,10 @@ class InvoiceService
     public static function getInvoiceById(int $id)
     {
         $invoice = Invoice::where('id', $id)
+            ->with(['transactions' => function ($query) {
+                $query->where('is_child', 0);
+            }])
             ->first();
-
-        $transactions = InvoiceTransaction::where('invoice_id', $invoice->id)->with('products')->get();
-        $invoice->transactions = $transactions;
 
         $invoicePaymentInfos = InvoicePaymentInfo::where('invoice_id', $invoice->id)->get();
         $voucherIds = $invoicePaymentInfos->pluck('voucher_id')->toArray();
@@ -170,19 +171,38 @@ class InvoiceService
     private static function storeTransaction(
         array $transaction,
         Invoice $invoice,
+        int $dr_ledger,
+        $is_child = false,
+        $narration = NULL
     ) {
         $t = InvoiceTransaction::create([
             'quantity' => $transaction['quantity'],
             'rate' => $transaction['rate'],
-            'product_id' => $transaction['product_id'],
+            'item_id' => $transaction['item_id'],
+            'item_type' => $transaction['item_type'],
             'user_id' => $invoice->user_id,
             'invoice_id' => $invoice->id,
+            'is_child' => $is_child
         ]);
 
-        self::createInventoryTransaction(
-            $t,
-            $invoice
-        );
+        if ($t->item_type === 'BUNDLE') {
+            $narration = Bundle::find($t->item_id)->title . ' Payment Invoice #' . $t->invoice_id;
+            $childTransactions = $transaction['transactions'];
+            foreach ($childTransactions as $childTransaction) {
+                self::storeTransaction($childTransaction, $invoice, $dr_ledger, true, $narration);
+            }
+        }
+
+        if ($t->item_type === 'LEDGER') {
+            self::createPaymentVoucher($t, $dr_ledger, $narration);
+        }
+
+        if ($t->item_type === 'PRODUCT') {
+            self::createInventoryTransaction(
+                $t,
+                $invoice
+            );
+        }
     }
 
     private static function createInventoryTransaction(
@@ -203,7 +223,7 @@ class InvoiceService
         $response = [];
 
         $info = StockTransferInfo::create([
-            'product_id' => $transaction->product_id,
+            'product_id' => $transaction->item_id,
             'from_location_id' => $fromLocation,
             'to_location_id' => $toLocation,
             'narration' => $narration,
@@ -232,6 +252,25 @@ class InvoiceService
         return $response;
     }
 
+    private static function createPaymentVoucher(InvoiceTransaction $t, int $dr_ledger_id, $narration = NULL)
+    {
+        if (is_null($narration)) {
+            $narration = 'Payment Invoice #' . $t->invoice_id;
+        }
+
+        $amount = InvoiceService::calcNetAmount($t->quantity, $t->rate);
+        if ($amount > 0) {
+            Voucher::create([
+                'cr' => $t->item_id,
+                'dr' => $dr_ledger_id,
+                'narration' => $narration,
+                'amount' => $amount,
+                'user_id' => $t->user_id,
+                'immutable' => true
+            ]);
+        }
+    }
+
     public static function createSalesVoucher(
         int $contact_id,
         int $invoice_id,
@@ -240,7 +279,23 @@ class InvoiceService
         $message = '';
         try {
 
-            $transactions = InvoiceTransaction::where('invoice_id', $invoice_id)->get();
+            $t_query = InvoiceTransaction::where(
+                [
+                    'item_type' => 'PRODUCT',
+                    'invoice_id' => $invoice_id
+                ]
+            )
+                ->toSql();
+
+            $message .= $t_query;
+
+            $transactions = InvoiceTransaction::where(
+                [
+                    'item_type' => 'PRODUCT',
+                    'invoice_id' => $invoice_id
+                ]
+            )
+                ->get();
 
             if (is_null($transactions) || count($transactions) <= 0 || empty($transactions)) {
                 return;
@@ -251,11 +306,14 @@ class InvoiceService
                 $amount += self::calcNetAmount($t->quantity, $t->rate);
             }
 
+            $message .= 'Got Transactions length ' . count($transactions);
 
             $v = NULL;
 
             $cr = self::getSalesLedgerId();
             $dr = self::getCustomerLedger($contact_id);
+
+            $message .= '$cr = ' . $cr . ' $dr = ' . $dr;
 
             if ($amount > 0) {
                 $v = Voucher::create([
@@ -283,7 +341,7 @@ class InvoiceService
         int $invoice_id,
         int $user_id
     ) {
-        $transactions = InvoiceTransaction::where('invoice_id', $invoice_id)
+        $transactions = InvoiceTransaction::where('item_type', 'PRODUCT')->where('invoice_id', $invoice_id)
             ->get();
         $amount = 0;
         foreach ($transactions as $t) {
@@ -325,6 +383,23 @@ class InvoiceService
                 if ($voucher['amount'] <= 0) {
                     continue;
                 }
+
+                if ($voucher['id'] > 0) { // When Invoice is Prepaid
+                    $amountReceivedFromServer = $voucher['amount'];
+                    $existingVoucher = Voucher::find($voucher['id']);
+                    $existingVoucher->narration .= '. ' . $narration;
+                    $existingVoucher->save();
+
+                    InvoicePaymentInfo::create([
+                        'invoice_id' => $invoice->id,
+                        'contact_id' => $invoice->contact_id,
+                        'voucher_id' => $existingVoucher->id,
+                        'amount' => $amountReceivedFromServer,
+                    ]);
+                    continue;
+                }
+
+                //When Voucher need to Be Created
                 $v = Voucher::create([
                     'cr' => $voucher['cr'],
                     'dr' => $voucher['dr'],

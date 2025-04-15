@@ -103,6 +103,7 @@ class ContactController extends Controller
         return response()->json($contact);
     }
 
+
     public function searchSupplier(Request $request)
     {
         $title = $request->input('title');

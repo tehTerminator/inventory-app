@@ -38,20 +38,21 @@ class InvoiceController extends Controller
             'invoice.kind' => 'required|in:SALES,PURCHASE',
             'invoice.contact_id' => 'required|integer|min:1|exists:contacts,id',
             'invoice.location_id' => 'required|integer|min:1|exists:locations,id',
-            'invoice.gross_amount' => 'required|decimal:0,2|min:1',
+            'invoice.gross_amount' => 'required|decimal:0,2|min:0.01',
             'invoice.discount_amount' => 'min:0|decimal:0,2'
         ]);
 
         $this->validate($request, [
-            'invoice.transactions.*.product_id' => 'required|exists:products,id',
+            'invoice.transactions.*.item_id' => 'required|integer|min:1',
+            'invoice.transactions.*.item_type' => 'string|in:PRODUCT,LEDGER,BUNDLE',
             'invoice.transactions.*.quantity' => 'required|decimal:0,2|min:0.01',
             'invoice.transactions.*.rate' => 'required|decimal:0,2|min:0.01',
         ]);
 
         $this->validate($request, [
-            'vouchers.*.cr' => 'required|exists:ledgers,id',
-            'vouchers.*.dr' => 'required|exists:ledgers,id',
-            'vouchers.*.amount' => 'required|decimal:0,2|min:1',
+            'vouchers.*.cr' => 'required|integer|min:1|exists:ledgers,id',
+            'vouchers.*.dr' => 'required|integer|min:1|exists:ledgers,id',
+            'vouchers.*.amount' => 'required|decimal:0,2|min:0.01',
         ]);
 
         $user_id = Auth::user()->id;
