@@ -62,7 +62,7 @@ class GeneralController extends Controller
         try {
             $query = $this->validateAndGetQuery($table);
         } catch (Exception $e) {
-            return response(['message' => $e->getMessage()], 400);
+            return response()->json(['message' => $e->getMessage()], 400);
         }
 
         // Apply options if provided
@@ -90,7 +90,8 @@ class GeneralController extends Controller
 
     public function getGeneralItems(Request $request)
     {
-
+        Cache::clear();
+        try{
         $this->validate($request, ['locationId' => 'required|exists:locations,id']);
         $locationId = $request->input('locationId');
 
@@ -126,6 +127,9 @@ class GeneralController extends Controller
         );
 
         return response()->json($generalItems);
+    } catch (\Exception $ex) {
+        return response()->json(['message' => $ex->getMessage()]);
+    }
     }
 
     private function validateAndGetQuery(string $table)
