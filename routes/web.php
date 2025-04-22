@@ -57,6 +57,7 @@ $router->group(['prefix' => 'get', 'middleware' => 'auth'], function () use ($ro
 
     $router->get('products', ['uses' => 'ProductController@indexProducts']);
     $router->get('productsUsed', ['uses' => 'OverviewReportController@productsUsed']);
+    $router->get('product/transferHistory', ['uses' => 'ProductController@productTransferHistory']);
 
     $router->get('users', ['uses' => 'UsersController@index']);
     $router->get('user/locations', ['uses' => 'UsersController@indexLocations']);

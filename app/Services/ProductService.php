@@ -107,4 +107,14 @@ class ProductService
 
         return $product;
     }
+
+    public static function getProductTransferHistory(int $location_id, int $product_id, string $date)
+    {
+        $usage = StockTransferInfo::where(function($query) use ($location_id) {
+            $query->where('to_location_id', $location_id)
+                ->orWhere('from_location_id', $location_id);
+        })->where('product_id', $product_id)->whereDate('created_at', $date)->with(['fromLocation', 'toLocation', 'user'])->get();
+
+        return $usage;
+    }  
 }

@@ -88,4 +88,20 @@ class ProductController extends Controller
         
         return response()->json($info);
     }
+
+    public function productTransferHistory(Request $request) {
+        $this->validate($request, [
+            'product_id' => 'required|exists:products,id',
+            'location_id' => 'required|exists:locations,id',
+            'created_at' => 'required'
+        ]);
+
+        $product = $request->input('product_id');
+        $location = $request->input('location_id');
+        $created_at = $request->input('created_at');
+
+        $history = ProductService::getProductTransferHistory($location, $product, $created_at);
+        return response()->json($history);
+    }
+
 }
