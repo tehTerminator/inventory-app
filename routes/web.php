@@ -103,6 +103,7 @@ $router->group(['prefix' => 'update', 'middleware' => 'auth'], function () use (
     $router->put('contact', ['uses' => 'ContactController@update']);
     $router->put('product-group', ['uses' => 'ProductController@updateProductGroup']);
     $router->put('voucher', ['uses' => 'VoucherController@update']);
+    $router->put('user', ['uses' => 'UsersController@update']);
 });
 
 $router->group(['prefix' => 'destroy', 'middleware' => 'auth'], function () use ($router) {
