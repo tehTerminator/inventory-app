@@ -81,7 +81,7 @@ class InvoiceService
                 'kind' => $invoice_data['kind'],
                 'contact_id' => $invoice_data['contact_id'],
                 'location_id' => $invoice_data['location_id'],
-                'paid' => false,
+                'paid' => $invoice_data['paid'],
                 'gross_amount' => $invoice_data['gross_amount'],
                 'discount_amount' => $invoice_data['discount_amount'],
                 'user_id' => $user_id,
