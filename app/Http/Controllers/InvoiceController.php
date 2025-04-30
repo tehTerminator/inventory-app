@@ -14,19 +14,22 @@ class InvoiceController extends Controller
      *
      * @return void
      */
-    public function __construct(){ }
+    public function __construct() {}
 
-    public function select(Request $request) {
-       $data = InvoiceService::select($request);
-       return response()->json($data);
+    public function select(Request $request)
+    {
+        $data = InvoiceService::select($request);
+        return response()->json($data);
     }
 
-    public function getById($id) {
+    public function getById($id)
+    {
         $data = InvoiceService::getInvoiceById($id);
         return response()->json($data);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
 
         $this->validate($request, [
@@ -49,16 +52,22 @@ class InvoiceController extends Controller
             'vouchers.*.dr' => 'required|integer|min:1|exists:ledgers,id',
             'vouchers.*.amount' => 'required|decimal:0,2|min:1',
         ]);
-        
+
         $user_id = Auth::user()->id;
-        
+
         $response = InvoiceService::createNewInvoice($request, $user_id);
         return response()->json($response);
     }
 
-    public function delete(int $id) {
-        $response = InvoiceService::delete($id);
-        // return response()->json(['message' => 'Invoice #' . $id . ' Deleted Successfully']);
-        return response()->json($response);
+    public function delete(int $id)
+    {
+        $user_id = Auth::user()->id;
+        $invoice_user_id = Invoice::find($id)->user_id;
+        if ($user_id == $invoice_user_id) {
+            $response = InvoiceService::delete($id);
+            return response()->json($response);
+        }
+
+        return response()->json(['message' => 'Unauthorised'], 401);
     }
 }
