@@ -7,6 +7,7 @@ use App\Services\VoucherService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\Ledger;
+use Illuminate\Support\Facades\Cache;
 
 class VoucherController extends Controller
 {
@@ -31,11 +32,19 @@ class VoucherController extends Controller
         $response = VoucherService::select($ledger, $from_date, $to_date);
         return response()->json($response);
     }
+    
+    public function getRecent(Request $request) {
+        $vouchers = Cache::remember('recentVouchers', 10, function() {
+            return Voucher::orderBy('id', 'desc')->with(['creditor', 'debtor'])->take(8)->get();
+        });
+        
+        return response()->json($vouchers);
+    }
 
     public function getById(int $id)
     {
         // return response($id);
-        $voucher = Voucher::findOrFail($id);
+        $voucher = Voucher::where('id', $id)->with(['creditor', 'debtor'])->first();
         return response()->json($voucher);
     }
 

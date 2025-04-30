@@ -31,6 +31,12 @@ class Voucher extends Model
         'amount' => 'double',
     ];
 
+    // Add this accessor method to format the amount to two decimal places
+    public function getAmountAttribute($value)
+    {
+        return number_format($value, 2, '.', '');
+    }
+
     public function creditor()
     {
         return $this->belongsTo(Ledger::class, 'cr', 'id');

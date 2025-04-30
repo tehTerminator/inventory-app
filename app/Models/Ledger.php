@@ -12,7 +12,7 @@ class Ledger extends Model {
      * @var array
      */
     protected $fillable = [
-        'title', 'kind', 'can_receive_payment'
+        'title', 'kind', 'can_receive_payment', 'can_pay'
     ];
 
     protected $hidden = [
@@ -22,4 +22,9 @@ class Ledger extends Model {
     public function balance_snapshot() {
         return $this->hasMany(BalanceSnapshot::class);
     }
+
+    protected $casts = [
+        'can_receive_payment' => 'boolean',
+        'can_pay' => 'boolean'
+    ];
 }
