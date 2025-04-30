@@ -15,9 +15,7 @@ class VoucherController extends Controller
      *
      * @return void
      */
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function select(Request $request)
     {
