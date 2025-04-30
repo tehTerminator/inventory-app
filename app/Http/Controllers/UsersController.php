@@ -43,15 +43,40 @@ class UsersController extends Controller
         return response()->json($user);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request)
     {
-        $user->name = $request->input('name');
-        $user->username = $request->input('username');
-        $user->email = $request->input('email');
-        $user->password = $request->input('password');
-        $user->save();
+        // // return response('Hello');
+        try {
+            $this->validate($request, [
+                'username' => 'required|string',
+                'name' => 'required|string',
+                'mobile' => 'required|string',
+                'oldPassword' => 'required|string',
+                'newPassword' => 'nullable|string',
+            ]);
 
-        return response()->json($user);
+
+            $user = User::where('username', $request->username)->first();
+
+            if(empty($user) || $user->login($request->oldPassword) == false) {
+                return response('No Such User', 401);
+            }
+
+        
+            // Update user details
+            $user->name = $request->name;
+            $user->mobile = $request->mobile;
+
+            // Update password if newPassword is provided and its length is greater than 6
+            if ($request->newPassword != null && strlen($request->newPassword) > 6) {
+                $user->password = Hash::make($request->newPassword);
+            }
+
+            $user->save();
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred while updating the user', 'error' => $e->getMessage()], 500);
+        }
     }
 
     public function destroy(User $user)
